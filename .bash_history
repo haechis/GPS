@@ -86,3 +86,49 @@ git pull
 git branch
 bit push
 git push
+ls
+cd gps
+ls
+cd GPS
+ls
+code . 
+git pull origin
+g++ main.cpp
+./a
+./a.out
+g++ -c main.cpp
+g++ -o main main.o
+ls
+./main.o
+g++ -W -Wall -O2 -o main main.cpp
+ls
+cd main
+./main
+ls
+git branch
+git remote
+code .
+ls
+cd ..
+ls
+git status
+cd
+git status
+cd
+ls
+cd test_
+ls
+git status
+cd
+code .
+cd
+ls
+cd GPS_test
+git status
+git branch
+git push origin main
+git config --global user.name "haechis"
+git config --global user.email "gockdd1677@gmail.com"
+git config credential.helper store
+git pull
+git push
