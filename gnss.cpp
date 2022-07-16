@@ -12,7 +12,7 @@ void GNSS_f::setDOY(std::string DOY){
     this -> DOY = DOY;
 }
 
-void GNSS_f::setRinex(){
+void GNSS_f::setRINEX(){
     // create file name.
     File_obs = this-> Site + this->DOY + "0.22o";
     File_nav = this -> Site + this -> DOY + "0.22n";
@@ -21,7 +21,8 @@ void GNSS_f::setRinex(){
     printf("<test> File_nav: %s\n",File_nav.c_str()); 
 }
 
-void ReadEPH(std::string fp){
+
+void GNSS_f::ReadEPH(std::string fp){
     std::string line;
 
     // input file.

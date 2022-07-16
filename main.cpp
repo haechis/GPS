@@ -14,7 +14,7 @@ int main(void){
 	Gps.setSite(site);
 	Gps.setDOY(doy);
 
-	Gps.setRinex();	
+	Gps.setRINEX();	
 
 	// create file name to read RINEX files.
     std::string filename(Gps.File_nav);
