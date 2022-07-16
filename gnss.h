@@ -17,9 +17,14 @@ public:
     GNSS_f();
 
     std::string File_obs;
-    
+    std::string File_nav;
+
     void setSite(std::string Site);
     void setDOY(std::string DOY);
-    void setOBS();
+    void setRinex(); // rinex file naming.
+
+    // Read RINEX navigation file and save the data
+    void ReadEPH(std::string fp);
+    
 };
 
