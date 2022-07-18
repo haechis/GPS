@@ -27,10 +27,7 @@ double GNSS_f::str2double(std::string s, int a, int b) {
 	//int c = b - 3;
 	double x = pow(10, std::stof(s.substr(b - 2, b)));
 
-    //    printf("앞 자리: %6.3f, 뒷 자리: %10.7f, 곱: %10.7f \n",std::stod(s.substr(a, b - 4)),x, std::stod(s.substr(a, b - 4))*x);
-    std::cout<<std::stod(s.substr(a, b - 4))<<std::endl;
-	return std::stod(s.substr(a, b - 4)) * x;
-
+    return std::stod(s.substr(a, 7)) * x; // s.substr(a,b) : read, a~a+7 of string s.
 }
 
 
@@ -63,8 +60,6 @@ void GNSS_f::ReadEPH(std::string fp){
 			al[3] = str2double(line, 39, 49);
 
             // test.
-            
-            
             std::cout<<al[1]<<std::endl;
             std::cout<<al[2]<<std::endl;
             std::cout<<al[3]<<std::endl;
@@ -81,7 +76,7 @@ void GNSS_f::ReadEPH(std::string fp){
 			be[3] = str2double(line, 39, 49);
 
             //std::cout<<be[1]<<std::endl;
-            //std::cout<<be[3]<<std::endl; // beta[3]: -6.5540D+04       
+            std::cout<<be[3]<<std::endl; // beta[3]: -6.5540D+04       
 		}
         // end of header -> loop break.
 		std::string line_tmp = line.substr(60, 72);
