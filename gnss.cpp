@@ -30,25 +30,7 @@ double GNSS_f::str2double(std::string s, int a, int b) {
     return std::stod(s.substr(a, 7)) * x; // s.substr(a,b) : read, a~a+7 of string s.
 }
 
-
-void GNSS_f::ReadEPH(std::string fp){
-    std::string line;
-
-    // input file.
-    std::ifstream input_file(fp);
-    if (!input_file.is_open()){
-        std::cerr << "Could not open the file - ' " << fp << std::endl;
-    }
-    else{
-        printf("Success to read RINEX navigation file\n");
-    }
-
-    // Klobuchar Coefficient Array.
-    // Klobuchar Coef. 
-    double al[] = {0.0, 0.0, 0.0, 0.0};
-    double be[] = {0.0, 0.0, 0.0, 0.0};
-
-
+void GNSS_f::ReadAlBe(double * al, double * be){
     // Read Klobuchar Coef. and End of header
     while (std::getline(input_file, line)){
         // read alpha coef.
@@ -60,10 +42,7 @@ void GNSS_f::ReadEPH(std::string fp){
 			al[3] = str2double(line, 39, 49);
 
             // test.
-            std::cout<<al[1]<<std::endl;
-            std::cout<<al[2]<<std::endl;
-            std::cout<<al[3]<<std::endl;
-            std::cout<<al[0]<<std::endl; // alpha[0]: 1.4900D-08 
+            //std::cout<<al[0]<<std::endl; // alpha[0]: 1.4900D-08 
         }
 
         // read beta coef.
@@ -76,17 +55,34 @@ void GNSS_f::ReadEPH(std::string fp){
 			be[3] = str2double(line, 39, 49);
 
             //std::cout<<be[1]<<std::endl;
-            std::cout<<be[3]<<std::endl; // beta[3]: -6.5540D+04       
+            //std::cout<<be[3]<<std::endl; // beta[3]: -6.5540D+04       
 		}
         // end of header -> loop break.
 		std::string line_tmp = line.substr(60, 72);
 		if (line_tmp.compare("END OF HEADER") == 0) {
 			break;
 		}
-
-
-
-           
-
     }
+
+}
+
+void GNSS_f::ReadEPH(std::string fp){
+
+    // input file.
+    input_file.open(fp);
+    if (!input_file.is_open()){
+        std::cerr << "Could not open the file - ' " << fp << std::endl;
+    }
+    else{
+        printf("Success to read RINEX navigation file\n");
+    }
+
+    // Klobuchar Coefficient Array.
+    // Klobuchar Coef. 
+    double al[] = {0.0, 0.0, 0.0, 0.0};
+    double be[] = {0.0, 0.0, 0.0, 0.0};
+
+    ReadAlBe(al, be);
+    //std::cout<<be[3]<<std::endl;
+
 }

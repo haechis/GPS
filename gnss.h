@@ -19,12 +19,15 @@ public:
     std::string File_obs;
     std::string File_nav;
 
-
+    std::ifstream input_file;
+    std::string line;
 
     void setSite(std::string Site);
     void setDOY(std::string DOY);
     
     double str2double(std::string s, int a, int b);
+
+    void ReadAlBe(double * al, double * be);
 
     void setRINEX(); // rinex file naming.
 
