@@ -20,7 +20,7 @@ int main(void){
     std::string filename(Gps.File_nav);
 
 	// Read navigation file. especially ephemeris 
-	Gps.ReadEPH(filename);
+	Gps.ReadNav(filename);
 
 	return 0;
 
