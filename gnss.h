@@ -26,11 +26,20 @@ public:
     void setDOY(std::string DOY);
     
     double str2double(std::string s, int a, int b);
+	double str2double2(std::string s, int a, int b);
 
     void ReadAlBe(double * al, double * be);
 
+	void ReadFile(std::string fp);
+	void CloseFile();
+
     void setRINEX(); // rinex file naming.
-    void ReadEPH();
+    void ReadEph();
+
+
+	void ReadObs_Header_Type();
+	void ReadObs_Header_Meas();
+	void ReadObs(std::string fp);
 
     struct eph {
 		char GNSS_type; // G R E C J ...
@@ -78,6 +87,44 @@ public:
     }; // struct eph.
 
     std::vector<eph> ephs;
+
+	std::vector<std::string> num_sigs;
+
+	struct Obs {
+		double yy, mm, dd;
+
+		double hour, min, sec;
+	
+		std::string gnss_type; // GRECJ ..
+		int prn;
+		double meas; // measurement
+		
+		std::vector<int> PRN_s;
+		std::vector<double> MEAS_s;
+		std::vector<char> PRN_types;
+
+		Obs() {
+			double yy = 0;
+			double mm = 0;
+			double dd = 0;
+
+			double hour = 0;
+			double min = 0;
+			double sec = 0;
+
+			std::string gnss_type = ""; // GRECJ ..
+			int prn = 0;
+			double meas = 0;
+			
+		}		
+	};
+
+	std::vector<Obs> Obss;
+
+	struct MEAS{
+
+	};
+	std::vector<MEAS> meas_s;
 
     // Read RINEX navigation file and save the data
     void ReadNav(std::string fp);
