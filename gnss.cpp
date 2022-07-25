@@ -245,11 +245,18 @@ void GNSS_f::ReadObs_Header_Meas(){
 	int first_epoch = 0;
 	while (!input_file.eof()) {
 		
+		// test - 220725 -> ok. //
+		/* std::cout << first_epoch;
 		std::cout << " ";
-		//std::cout << first_epoch;
-			
+		*/ 
+
 		if (first_epoch == 2879)
-			std::cout << line;
+			{
+				std::cout<<"first_epoch";
+				std::cout << line;
+				break;
+			}
+			
 		if (first_epoch == 0) {
 			std::getline(input_file, line);
 			//first_epoch = 1;
@@ -281,7 +288,9 @@ void GNSS_f::ReadObs_Header_Meas(){
 
 
 		int num_prn = str2double(line, 29, 30);
-		//std::cout << num_prn;
+		std::cout<<"num_prn: ";
+		std::cout << num_prn;
+
 		//std::cout << line.size();5
 		Obs ttemp;
 		ttemp.yy = str2double2(line, 1, 2);
@@ -295,8 +304,8 @@ void GNSS_f::ReadObs_Header_Meas(){
 		ttemp.prn = str2double2(line, 30, 31);
 		//ttemp.sec = str2double2(line, 4, 5);
 		//ttemp.sec = str2double2(line, 4, 5);
-		//std::cout << ttemp.prn;
-		//std::cout << ttemp.min;
+		std::cout << ttemp.prn;
+		std::cout << ttemp.min;
 
 		int cnt_prn = 0;
 		//std::cout << cnt_prn;
@@ -337,8 +346,8 @@ void GNSS_f::ReadObs_Header_Meas(){
 		//이제 measuremnet를 읽을 차례!
 			//?/////////////////
 		//std::cout << "sig 개수"; 10
-		//std::cout << num_sigs.size();
-		//std::cout << line;
+		std::cout << num_sigs.size();
+		std::cout << line;
 		
 		double meas_temp;
 		int cnt_sig = 0;
@@ -422,7 +431,12 @@ void GNSS_f::ReadObs_Header_Meas(){
 
 
 	}
-	std::cout << "End -> Read OBS";
+	std::cout << "End -> Read OBS\n\n";
+
+	// test
+//	for (auto e : ttemp.PRN_s){
+//		std::cout<< e <<std::endl;
+//	}
 }
 
 void GNSS_f::ReadObs(std::string fp){
