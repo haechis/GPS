@@ -102,6 +102,7 @@ public:
 		std::vector<int> PRN_s;
 		std::vector<double> MEAS_s;
 		std::vector<char> PRN_types;
+		std::vector<std::string> signal_type;
 
 		Obs() {
 			double yy = 0;
