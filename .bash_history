@@ -132,3 +132,68 @@ git config --global user.email "gockdd1677@gmail.com"
 git config credential.helper store
 git pull
 git push
+code.
+code .
+cd
+ls
+cd test
+ls
+cd test2
+ls
+g++ -main main.cpp
+g++ -o main main.cpp
+ls
+./main
+git push -origin main
+git push
+5~2~5~
+git push -origin main
+git push
+git push origin +main
+git update-ref refs/heads/main haechis
+git update-ref refs/heads/main d
+git update-ref refs/heads/main 
+git push origin +main
+ls
+cd..
+ls
+cd ..
+ls
+code .
+ls
+sudo apt update
+g++ -v
+sudo apt install g++
+code .
+g++ -v
+g++ version
+g++ -version
+code .
+ls
+cd gps_test
+cd GPS/
+ls
+./a.out
+chmod +x a.out
+./a.out
+code .
+xcode-select --install
+code .
+ls
+cd gps_test/
+cd G
+cd GPS/
+ls
+g++ main.cpp gnss.cpp
+./a.exe
+g++ main.cpp gnss.cpp
+./a.exe
+chmod +x a.exe
+./a.exe
+./a.out
+g++ main.cpp gnss.cpp
+./a.out
+ls
+code .
+cod e.
+code .
