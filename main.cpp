@@ -26,6 +26,9 @@ int main(void){
 	std::string filename2(Gps.File_obs);
 	Gps.ReadObs(filename2);
 
+
+	// Positioning.
+	// ...
 	return 0;
 
 }
