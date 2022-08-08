@@ -32,6 +32,7 @@ public:
     
     double str2double(std::string s, int a, int b);
 	double str2double2(std::string s, int a, int b);
+	int str2int(std::string s, int a, int b);
 
     void ReadAlBe(double * al, double * be);
 

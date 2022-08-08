@@ -30,6 +30,14 @@ double GNSS_f::str2double(std::string s, int a, int b) {
     return std::stod(s.substr(a, 7)) * x; // s.substr(a,b) : read, a~a+7 of string s.
 }
 
+int GNSS_f::str2int(std::string s, int a, int b) {
+    // str2double: MATLAB style.
+	//int c = b - 3;
+	int x = pow(10, std::stoi(s.substr(b - 2, b)));
+
+    return int(std::stod(s.substr(a, 7)) * x); // s.substr(a,b) : read, a~a+7 of string s.
+}
+
 double GNSS_f::str2double2(std::string s, int a, int b) {
 
 	//double x =
@@ -57,45 +65,54 @@ void GNSS_f::ReadAlBe(double * al, double * be){
     // Read Klobuchar Coef. and End of header
     while (std::getline(input_file, line)){
         // read alpha coef.
-        std::string line_al = line.substr(60,68);
+		if (line.size() < 67)
+		continue;
+
+        std::string line_al = line.substr(60, 9);
         if (line_al.compare("ION ALPHA") == 0){
  			al[0] = str2double(line, 3, 13);
 			al[1] = str2double(line, 15, 25);
 			al[2] = str2double(line, 27, 37);
 			al[3] = str2double(line, 39, 49);
-
+			//std::cout<<"alpha ok"<<std::endl;
             // test.
             //std::cout<<al[0]<<std::endl; // alpha[0]: 1.4900D-08 
         }
 
         // read beta coef.
-        std::string line_be = line.substr(60, 67);
+        std::string line_be = line.substr(60, 8);
 		if (line_be.compare("ION BETA") == 0) {
 
 			be[0] = str2double(line, 3, 13);
 			be[1] = str2double(line, 15, 25);
 			be[2] = str2double(line, 27, 37);
 			be[3] = str2double(line, 39, 49);
-
+			//std::cout<<"beta ok"<<std::endl;
             //std::cout<<be[1]<<std::endl;
             //std::cout<<be[3]<<std::endl; // beta[3]: -6.5540D+04       
 		}
         // end of header -> loop break.
-		std::string line_tmp = line.substr(60, 72);
-		if (line_tmp.compare("END OF HEADER") == 0) {
-			break;
+		
+			std::cout<<line.size()<<std::endl;
+			std::string line_tmp = line.substr(60, 13);
+			if (line_tmp.compare("END OF HEADER") == 0) {
+				//std::cout<<"end: read al be"<<std::endl;
+				break;
 		}
+		
     }
 
 }
 
 void GNSS_f::ReadEph(){
     int k= 0;
+	
     while (std::getline(input_file, line)){
         double V[31];
         int prn_n = std::stoi(line.substr(0,2));
+		
         V[0] = prn_n;
-		V[1] = std::stod(line.substr(12, 13)) * 3600 + std::stod(line.substr(15, 16)) * 60 + std::stod(line.substr(18, 21)); // toe
+		V[1] = std::stod(line.substr(12, 2)) * 3600 + std::stod(line.substr(15, 2)) * 60 + std::stod(line.substr(18, 2)); // toe
 		V[2] = str2double(line, 22, 40); // a [sec]
 		V[3] = str2double(line, 41, 59); // b [sec/sec]
 		V[4] = str2double(line, 60, 78); // c [sec/sec2]
@@ -189,7 +206,7 @@ void GNSS_f::ReadObs_Header_Type(){
 
 	while (std::getline(input_file, line)) {
 
-		std::string TOO = line.substr(60, 78);
+		std::string TOO = line.substr(60, 19);
 		if (TOO.compare("# / TYPES OF OBSERV") == 0)
 		{
 			//std::cout << 0;
@@ -236,15 +253,25 @@ void GNSS_f::ReadObs_Header_Type(){
 	}
 
 	while (std::getline(input_file, line)) {
+		std::cout<<line<<std::endl;
+		if (line.size() < 74){
+			continue;
+		}
+
+			
 		// std::string EOH = line.substr(60, 72); // End Of Header
+		
 		std::string EOH = line.substr(60, 13); // End Of Header
+		std::cout<<line.size()<<std::endl;
+		std::cout<<EOH<<std::endl;
 		if (EOH.compare("END OF HEADER") == 0)
 			{
-				std::cout<<"test";
 				break;
 			}
 			
+			
 	}
+	
 }
 
 void GNSS_f::ReadObs_Header_Meas(){
@@ -253,7 +280,7 @@ int first_epoch = 0;
 	while (!input_file.eof()) {
 		
 		// std::cout << " ";
-		//std::cout << first_epoch;
+		std::cout << first_epoch<<std::endl;
 			
 		if (first_epoch == 2879)
 			std::cout << line;
@@ -286,10 +313,11 @@ int first_epoch = 0;
 		//observation measurement 읽기.
 
 
-
-		int num_prn = str2double(line, 29, 30);
+		std::cout << "798 epoch에 error 발생"<<std::endl;
+		int num_prn = str2int(line, 29, 30);
 		//std::cout << num_prn;
 		//std::cout << line.size();5
+
 		Obs ttemp;
 		ttemp.yy = str2double2(line, 1, 2);
 		ttemp.mm = str2double2(line, 4, 5);
@@ -299,7 +327,7 @@ int first_epoch = 0;
 		ttemp.min = str2double2(line, 13, 14);
 		ttemp.sec = str2double2(line, 16, 24);
 
-		ttemp.prn = str2double2(line, 30, 31);
+		ttemp.prn = str2int(line, 30, 31);
 		//ttemp.sec = str2double2(line, 4, 5);
 		//ttemp.sec = str2double2(line, 4, 5);
 		//std::cout << ttemp.prn;
@@ -311,16 +339,25 @@ int first_epoch = 0;
 		//std::string s;
 		std::vector<char> gnss_types; // 
 		//double *prns = new double[num_prn];
-		std::vector<double> prns;
+		std::vector<int> prns;
 		
 		while (cnt_prn < num_prn) {
+			
 			int line1 = (line.size() - 32) / 3;
 			//std::cout << line1;
 			for (int iter = 0; iter < line1; iter++) {
+				
 				//s[cnt_prn] = line[32 + iter * 3];
 				gnss_types.push_back(line[32 + iter * 3]);
 				//prns[cnt_prn] = str2double2(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2);
-				prns.push_back(str2double2(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2));
+				//std::cout<<"Error: here"<<std::endl;
+				//std::cout<<line<<std::endl;
+				//std::cout<<32 + iter * 3 + 1<<std::endl;
+				//std::cout<<32 + iter * 3 + 2<<std::endl;
+				//std::cout<<stoi(line.substr(32 + iter * 3 + 1,2))<<std::endl;
+				// prns.push_back(str2int(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2));
+				prns.push_back(stoi(line.substr(33,2)));
+				
 				//s[cnt_prn] = 
 				//Obss.push_back(ttemp);
 				cnt_prn++;
@@ -366,8 +403,14 @@ int first_epoch = 0;
 					for (int kk = 0; kk < num_sigs.size() - (jump_line-1)*5; kk++) {
 					//	std::cout << "DLFKHJSDLKFJDSL";
 						if (line.size() < 16 * kk + 1) continue;
-						if (line.substr(16 * kk + 1, 13) == "            ") continue;
+						// if (line.substr(16 * kk + 1, 13) == "            ") continue;
+						std::string line_tmp = line.substr(16*kk+1,12);
+						//if (line_tmp.compare("            ") == 0) continue;
+						if (line_tmp.size() == 0) continue;
 						
+						// std::cout<<line<<std::endl;
+						//std::cout<<16*kk+1<<std::endl;
+						// std::cout<<line.substr(16*kk+1,13)<<std::endl;
 						meas_temp = str2double2(line, 16 * kk + 1,13);
 						//std::cout << "\n";
 						//std::cout << meas_temp;
@@ -386,14 +429,24 @@ int first_epoch = 0;
 						
 						// std::stod(s.substr(a, b - a + 1))
 						if (line.size() < 16 * kk + 1) continue;
-						if(line.substr(16*kk+1,12) == "            ") continue;
+
+						
+						// if(line.substr(16*kk+1,12) == "            ") continue;
+						std::string line_tmp = line.substr(16*kk+1,12);
+						//if (line_tmp.compare("            ") == 0) continue;
+						if (line_tmp.size() == 0) continue;
+						// std::cout<<"E3"<<std::endl;
+						// std::cout<<line.size()<<std::endl;
+						// std::cout<<line_tmp.size()<<std::endl;
 						
 						//if (std::stod(line.substr(15 * kk + 2, 15 * kk + 13)) == 0) continue;
 						//std::cout << "\n";
 						//std::cout << kk;
 						//std::cout << ":  ";
 						//std::cout << line.substr(16 * kk + 1, 13);
-						meas_temp = str2double2(line, 16 * kk + 1, 13);
+						// std::cout<<line.substr(16*kk+1,13)<<std::endl;
+						meas_temp = str2double2(line, 16 * kk + 1,13);
+						//meas_temp = str2double2(line, 16 * kk + 1, 13);
 						//std::cout << "\n";
 						//std::cout << meas_temp;
 
