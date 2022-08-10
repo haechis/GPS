@@ -313,7 +313,7 @@ int first_epoch = 0;
 		//observation measurement 읽기.
 
 
-		std::cout << "798 epoch에 error 발생"<<std::endl;
+		std::cout << first_epoch<<std::endl;
 		int num_prn = str2int(line, 29, 30);
 		//std::cout << num_prn;
 		//std::cout << line.size();5
@@ -405,7 +405,7 @@ int first_epoch = 0;
 						if (line.size() < 16 * kk + 1) continue;
 						// if (line.substr(16 * kk + 1, 13) == "            ") continue;
 						std::string line_tmp = line.substr(16*kk+1,12);
-						//if (line_tmp.compare("            ") == 0) continue;
+						if (line_tmp.compare("            ") == 0) continue;
 						if (line_tmp.size() == 0) continue;
 						
 						// std::cout<<line<<std::endl;
@@ -423,17 +423,23 @@ int first_epoch = 0;
 				}
 				else {
 					for (int kk = 0; kk < 5; kk ++ ) {
-						//std::cout << "\n";
+						
 						//std::cout << kk;
 						
 						
 						// std::stod(s.substr(a, b - a + 1))
-						if (line.size() < 16 * kk + 1) continue;
+						if (line.size() < 16 * kk + 1) {
+							//std::cout << "E1\n";
+							continue;
+						}
+						
 
 						
 						// if(line.substr(16*kk+1,12) == "            ") continue;
+						
 						std::string line_tmp = line.substr(16*kk+1,12);
-						//if (line_tmp.compare("            ") == 0) continue;
+						
+						if (line_tmp.compare("            ") == 0) continue;
 						if (line_tmp.size() == 0) continue;
 						// std::cout<<"E3"<<std::endl;
 						// std::cout<<line.size()<<std::endl;
@@ -445,7 +451,11 @@ int first_epoch = 0;
 						//std::cout << ":  ";
 						//std::cout << line.substr(16 * kk + 1, 13);
 						// std::cout<<line.substr(16*kk+1,13)<<std::endl;
+						//std::cout << "E2\n";
+						
+							
 						meas_temp = str2double2(line, 16 * kk + 1,13);
+						//std::cout << "E3\n";
 						//meas_temp = str2double2(line, 16 * kk + 1, 13);
 						//std::cout << "\n";
 						//std::cout << meas_temp;
