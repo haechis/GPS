@@ -1,7 +1,7 @@
 gnss.o: gnss.h gnss.cpp
 	g++ -c gnss.cpp
 
-INC = /user/eigen-3.4.0/Eigen
+INC = /eigen-3.4.0
 
 main.o: gnss.h main.cpp
 	g++ -c main.cpp
