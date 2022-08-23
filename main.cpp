@@ -29,6 +29,24 @@ int main(void){
 
 	// Positioning.
 	// ...
+	std::cout<<Gps.Obss.size()<<std::endl;
+	
+	// Positioning as much as the number of Obss
+	for (auto e : Obss)
+	{
+		// 1. Find T_k
+
+		// 2. Find L1 measurements of the satellite observed at T_k
+
+		// 3. Find Satellites' position
+
+		// 4. Find Receiver's position using Least Square Estimation
+		//  4.x. consider GNSS errors.
+
+	}
+
+	// 5. Output: Statistical Results
+
 	return 0;
 
 }

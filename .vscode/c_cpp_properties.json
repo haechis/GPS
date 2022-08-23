@@ -4,11 +4,12 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-<<<<<<< HEAD
+                "D:\\ProgramFiles\\eigen-3.4.0",
+
                 "C:\\MinGW\\mingw32\\include",
-=======
+
                 "C:\\MinGW\\mingw32\\include"
->>>>>>> afee1a387fea59abe0a38ab76a857f8a14d230c6
+
             ],
             "defines": [
                 "_DEBUG",

@@ -93,7 +93,7 @@ void GNSS_f::ReadAlBe(double * al, double * be){
 		}
         // end of header -> loop break.
 		
-			std::cout<<line.size()<<std::endl;
+			// std::cout<<line.size()<<std::endl;
 			std::string line_tmp = line.substr(60, 13);
 			if (line_tmp.compare("END OF HEADER") == 0) {
 				//std::cout<<"end: read al be"<<std::endl;
@@ -211,7 +211,7 @@ void GNSS_f::ReadObs_Header_Type(){
 		{
 			//std::cout << 0;
 			double num_sig = str2double2(line, 4, 5);
-			std::cout << num_sig<<std::endl;
+			// std::cout << num_sig<<std::endl;
 			
 			int cnt_sig = 0;
 			while (cnt_sig < num_sig) {
@@ -224,7 +224,7 @@ void GNSS_f::ReadObs_Header_Type(){
 
 					if (cnt_sig == int(num_sig))
 					{
-						std::cout << "here~\n";
+						// std::cout << "here~\n";
 						break;
 					} // 돌다가 같아지면 break.
 				}
@@ -248,12 +248,14 @@ void GNSS_f::ReadObs_Header_Type(){
 
 
 	// test
+	/*
 	for (auto e : num_sigs){
 		  std::cout<<e<<std::endl;
 	}
+	*/
 
 	while (std::getline(input_file, line)) {
-		std::cout<<line<<std::endl;
+		// std::cout<<line<<std::endl;
 		if (line.size() < 74){
 			continue;
 		}
@@ -262,8 +264,8 @@ void GNSS_f::ReadObs_Header_Type(){
 		// std::string EOH = line.substr(60, 72); // End Of Header
 		
 		std::string EOH = line.substr(60, 13); // End Of Header
-		std::cout<<line.size()<<std::endl;
-		std::cout<<EOH<<std::endl;
+		// std::cout<<line.size()<<std::endl;
+		// std::cout<<EOH<<std::endl;
 		if (EOH.compare("END OF HEADER") == 0)
 			{
 				break;
@@ -280,10 +282,10 @@ int first_epoch = 0;
 	while (!input_file.eof()) {
 		
 		// std::cout << " ";
-		std::cout << first_epoch<<std::endl;
+		// std::cout << first_epoch<<std::endl;
 			
 		if (first_epoch == 2879)
-			std::cout << line;
+			// std::cout << line;
 		if (first_epoch == 0) {
 			std::getline(input_file, line);
 			//first_epoch = 1;
@@ -313,7 +315,7 @@ int first_epoch = 0;
 		//observation measurement 읽기.
 
 
-		std::cout << first_epoch<<std::endl;
+		// std::cout << first_epoch<<std::endl;
 		int num_prn = str2int(line, 29, 30);
 		//std::cout << num_prn;
 		//std::cout << line.size();5
@@ -494,10 +496,10 @@ int first_epoch = 0;
 
 		Obss.push_back(ttemp);
 	}
-	std::cout << "\n End -> Read OBS \n ";
+	std::cout << "\n End -> Read OBS \n "<<std::endl;
 
 	// test
-
+	/*
 	for (auto e : Obss[0].PRN_s){
 		std::cout<<e<<std::endl;
 	}
@@ -515,6 +517,7 @@ int first_epoch = 0;
 	std::cout<<sizeof(Obss[0].MEAS_s);
 	std::cout<<sizeof(Obss[0].PRN_types);
 	std::cout<<sizeof(Obss[0].signal_type);
+	*/
 }
 
 
