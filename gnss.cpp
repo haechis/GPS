@@ -93,7 +93,7 @@ void GNSS_f::ReadAlBe(double * al, double * be){
 		}
         // end of header -> loop break.
 		
-			// std::cout<<line.size()<<std::endl;
+			std::cout<<line.size()<<std::endl;
 			std::string line_tmp = line.substr(60, 13);
 			if (line_tmp.compare("END OF HEADER") == 0) {
 				//std::cout<<"end: read al be"<<std::endl;
@@ -224,7 +224,7 @@ void GNSS_f::ReadObs_Header_Type(){
 
 					if (cnt_sig == int(num_sig))
 					{
-						// std::cout << "here~\n";
+						std::cout << "here~\n";
 						break;
 					} // 돌다가 같아지면 break.
 				}
@@ -251,8 +251,7 @@ void GNSS_f::ReadObs_Header_Type(){
 	/*
 	for (auto e : num_sigs){
 		  std::cout<<e<<std::endl;
-	}
-	*/
+	} */
 
 	while (std::getline(input_file, line)) {
 		// std::cout<<line<<std::endl;
@@ -284,8 +283,10 @@ int first_epoch = 0;
 		// std::cout << " ";
 		// std::cout << first_epoch<<std::endl;
 			
+		/*
 		if (first_epoch == 2879)
-			// std::cout << line;
+			std::cout << line;*/
+
 		if (first_epoch == 0) {
 			std::getline(input_file, line);
 			//first_epoch = 1;
@@ -320,16 +321,17 @@ int first_epoch = 0;
 		//std::cout << num_prn;
 		//std::cout << line.size();5
 
-		Obs ttemp;
-		ttemp.yy = str2double2(line, 1, 2);
-		ttemp.mm = str2double2(line, 4, 5);
-		ttemp.dd = str2double2(line, 7, 8);
+		// Obs ttemp;
+		Obs * ttemp = new Obs;
+		ttemp -> yy = str2double2(line, 1, 2); 
+		ttemp ->mm = str2double2(line, 4, 5);
+		ttemp ->dd = str2double2(line, 7, 8);
 
-		ttemp.hour = str2double2(line, 10, 11);
-		ttemp.min = str2double2(line, 13, 14);
-		ttemp.sec = str2double2(line, 16, 24);
+		ttemp ->hour = str2double2(line, 10, 11);
+		ttemp ->min = str2double2(line, 13, 14);
+		ttemp ->sec = str2double2(line, 16, 24);
 
-		ttemp.prn = str2int(line, 30, 31);
+		ttemp ->prn = str2int(line, 30, 31);
 		//ttemp.sec = str2double2(line, 4, 5);
 		//ttemp.sec = str2double2(line, 4, 5);
 		//std::cout << ttemp.prn;
@@ -358,7 +360,7 @@ int first_epoch = 0;
 				//std::cout<<32 + iter * 3 + 2<<std::endl;
 				//std::cout<<stoi(line.substr(32 + iter * 3 + 1,2))<<std::endl;
 				// prns.push_back(str2int(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2));
-				prns.push_back(stoi(line.substr(33,2)));
+				prns.push_back(stoi(line.substr(32 + iter * 3 + 1,2)));
 				
 				//s[cnt_prn] = 
 				//Obss.push_back(ttemp);
@@ -391,6 +393,7 @@ int first_epoch = 0;
 		int cnt = 0;
 		int jump_line = num_sigs.size() / 5 + 1;
 		int iter;
+		int push_number = 0;
 		for (iter = 0; iter < prns.size() ; iter++) {
 			//std::cout << " Line Jump ";
 			//std::cout << prns.size() * (num_sigs.size() / 5 + 1) - 1;
@@ -416,11 +419,12 @@ int first_epoch = 0;
 						meas_temp = str2double2(line, 16 * kk + 1,13);
 						//std::cout << "\n";
 						//std::cout << meas_temp;
-						ttemp.PRN_s.push_back(prns[iter]);
-						ttemp.MEAS_s.push_back(meas_temp);
-						ttemp.PRN_types.push_back(gnss_types[iter]);
-						ttemp.signal_type.push_back(num_sigs[cnt]);
+						ttemp ->PRN_s.push_back(prns[iter]);
+						ttemp ->MEAS_s.push_back(meas_temp);
+						ttemp ->PRN_types.push_back(gnss_types[iter]);
+						ttemp ->signal_type.push_back(num_sigs[cnt]);
 						cnt++;
+						push_number++;
 					}
 				}
 				else {
@@ -459,17 +463,16 @@ int first_epoch = 0;
 						meas_temp = str2double2(line, 16 * kk + 1,13);
 						//std::cout << "E3\n";
 						//meas_temp = str2double2(line, 16 * kk + 1, 13);
-						//std::cout << "\n";
-						//std::cout << meas_temp;
-
 						
-						ttemp.PRN_s.push_back(prns[iter]);
-						ttemp.MEAS_s.push_back(meas_temp);
-						ttemp.PRN_types.push_back(gnss_types[iter]);
-						ttemp.signal_type.push_back(num_sigs[cnt]);
+
+						ttemp ->PRN_s.push_back(prns[iter]);
+						ttemp ->MEAS_s.push_back(meas_temp);
+						ttemp ->PRN_types.push_back(gnss_types[iter]);
+						ttemp ->signal_type.push_back(num_sigs[cnt]);
+						push_number++;
 						cnt++;
 					}
-					//std::cout << "Enter";
+					// std::cout << "cnt \n";
 				}
 				 
 				/*
@@ -490,20 +493,25 @@ int first_epoch = 0;
 					break;
 
 			} // for jump line
+			
 			cnt = 0;
 		} //for iter
-
-
-		Obss.push_back(ttemp);
+		
+		ttemp->pn = push_number;
+		Obss.push_back(*ttemp);
+		
+		delete ttemp;
+		// std::cout << "this line test \n ";
 	}
-	std::cout << "\n End -> Read OBS \n "<<std::endl;
+	std::cout << "\n End -> Read OBS \n ";
 
 	// test
 	/*
-	for (auto e : Obss[0].PRN_s){
-		std::cout<<e<<std::endl;
-	}
-	for (int i = 0; i < sizeof(Obss[0]); i++){
+	std::cout << "Obss size:"<<sizeof(Obss[0]) - 9 - sizeof(Obss[0].gnss_type)<<std::endl;
+	std::cout << "Obss size:"<<Obss[0].pn<<std::endl;
+	for (int i = 0; i < Obss[1].pn - 1; i++){
+		std::cout<<i;
+		std::cout<<"  ";
 		std::cout<<Obss[0].PRN_s[i];
 		std::cout<<"  ";
 		std::cout<<Obss[0].MEAS_s[i];
@@ -530,4 +538,53 @@ void GNSS_f::ReadObs(std::string fp){
 	ReadObs_Header_Meas();
 	CloseFile();
 
+}
+
+void GNSS_f::Find_T_k(){
+	std::cout<<"T_K: ";
+	T_k = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
+	
+	std::cout<<T_k;
+	std::cout<<"\n";
+}
+
+void GNSS_f::gps_L1(){
+	std::string tmp;
+	std::cout<<"<GPS L1> \n";
+
+	for (int i = 0; i < now_obs.pn; i++){
+		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1")
+		{
+		std::cout<<now_obs.PRN_s[i];
+		std::cout<<"  ";
+		std::cout<<now_obs.MEAS_s[i];
+		std::cout<<"  ";
+		std::cout<<now_obs.PRN_types[i];
+		std::cout<<"  ";
+		std::cout<<now_obs.signal_type[i];
+		std::cout<<"\n";
+		}
+		}
+
+
+}
+
+void GNSS_f::Positioning(){
+	for (auto e : Obss)
+	{
+		now_obs = e;
+		// 1. Find T_k
+		Find_T_k();
+
+		// 2. Find L1 measurements of the satellite observed at T_k
+		gps_L1();
+
+		// 3. Find Satellites' position
+
+		// 4. Find Receiver's position using Least Square Estimation
+		//  4.x. consider GNSS errors.
+		break;
+	}
+
+	// 5. Output: Statistical Results
 }

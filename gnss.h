@@ -102,7 +102,7 @@ public:
 		double hour, min, sec;
 	
 		std::string gnss_type; // GRECJ ..
-		int prn;
+		int prn, pn;
 		double meas; // measurement
 		
 		std::vector<int> PRN_s;
@@ -136,5 +136,12 @@ public:
     // Read RINEX navigation file and save the data
     void ReadNav(std::string fp);
     
+	// Satellite's position.
+	void Positioning();
+	Obs now_obs;
+	double T_k;
+	void Find_T_k();
+	void gps_L1();
+	
 };
 
