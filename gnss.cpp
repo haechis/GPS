@@ -555,16 +555,35 @@ void GNSS_f::gps_L1(){
 	for (int i = 0; i < now_obs.pn; i++){
 		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1")
 		{
-		std::cout<<now_obs.PRN_s[i];
-		std::cout<<"  ";
-		std::cout<<now_obs.MEAS_s[i];
-		std::cout<<"  ";
-		std::cout<<now_obs.PRN_types[i];
-		std::cout<<"  ";
-		std::cout<<now_obs.signal_type[i];
-		std::cout<<"\n";
+			std::cout<<now_obs.PRN_s[i];
+			std::cout<<"  ";
+			std::cout<<now_obs.MEAS_s[i];
+			std::cout<<"  ";
+			std::cout<<now_obs.PRN_types[i];
+			std::cout<<"  ";
+			std::cout<<now_obs.signal_type[i];
+			std::cout<<"\n";
+		
+			// ephemeris에서 필요한 정보를 찾기
+			for (int j = 0; j< sizeof(ephs);j++){
+				// time.
+				if (ephs.t_oe >= T_k)
+				{
+					break;
+				}
+				
+				// prn number.
+				if(ephs.prn == now_obs.PRN_s){
+						
+				}
+
+
+			}
 		}
-		}
+
+
+
+	}
 
 
 }
@@ -580,6 +599,7 @@ void GNSS_f::Positioning(){
 		gps_L1();
 
 		// 3. Find Satellites' position
+
 
 		// 4. Find Receiver's position using Least Square Estimation
 		//  4.x. consider GNSS errors.
