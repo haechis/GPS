@@ -130,18 +130,18 @@ void GNSS_f::ReadEph(){
 		// line 3
 		std::getline(input_file, line);
 
-		V[9] = str2double(line, 3, 21); // Cuc [rad]
+		V[9] = str2double(line, 3, 21); // C uc [rad]
 		V[10] = str2double(line, 22, 40); // eccentricity
-		V[11] = str2double(line, 41, 59); //Cus [rad]
-		V[12] = str2double(line, 60, 78); //sqrt(A) [sqrt(m)]
+		V[11] = str2double(line, 41, 59); //C us [rad]
+		V[12] = str2double(line, 60, 78); //square root A [sqrt(m)]
 
 		// line 4
 		std::getline(input_file, line);
 
 		V[13] = str2double(line, 3, 21); // Toe [sec of GPS week]
-		V[14] = str2double(line, 22, 40); // Cic [rad]
+		V[14] = str2double(line, 22, 40); // C ic [rad]
 		V[15] = str2double(line, 41, 59); // Omega 0 [rad]
-		V[16] = str2double(line, 60, 78); // Cis [rad]
+		V[16] = str2double(line, 60, 78); // C is [rad]
 
 		// line 5
 		std::getline(input_file, line);
@@ -540,12 +540,25 @@ void GNSS_f::ReadObs(std::string fp){
 
 }
 
-void GNSS_f::Find_T_k(){
-	std::cout<<"T_K: ";
-	T_k = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
+void GNSS_f::Find_GPS_week_sec(){
+	std::cout<<"GPS_week_sec: ";
+	GPS_week_sec = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
 	
-	std::cout<<T_k;
+	std::cout<<GPS_week_sec;
 	std::cout<<"\n";
+}
+ 
+void GNSS_f::SatPos(){
+	// use: now_eph / GPS_week_sec
+	double T_k = GPS_week_sec - now_eph.t_oe;
+	double A = now_eph.sqrt_A;
+	double n_0 = sqrt(gps_mu / pow(A,3));
+	std::cout<<"T_k";
+	std::cout<<T_k;
+	std::cout<<"\n A";
+	std::cout<<A;
+	std::cout<<"\n";
+	std::cout<<n_0;
 }
 
 void GNSS_f::gps_L1(){
@@ -564,21 +577,37 @@ void GNSS_f::gps_L1(){
 			std::cout<<now_obs.signal_type[i];
 			std::cout<<"\n";
 		
+		
 			// ephemeris에서 필요한 정보를 찾기
 			for (int j = 0; j< sizeof(ephs);j++){
-				// time.
-				if (ephs.t_oe >= T_k)
+				std::cout<<"t_oe ";
+				std::cout<<ephs[j].t_oe;
+				std::cout<<"GS ";
+				std::cout<<GPS_week_sec;
+				std::cout<<"\n To Do: 내비게이션 파일 첫 데이터가 이전 날짜라서, 시간 +- 3600 내의 데이터만 쓰도록!\n ";
+
+
+				// time. 현재 시간 이전의 broadcast 값 읽기.
+				if (ephs[j].t_oe >= GPS_week_sec)
 				{
+					
+					
 					break;
 				}
 				
 				// prn number.
-				if(ephs.prn == now_obs.PRN_s){
-						
+				if(ephs[j].prn == now_obs.PRN_s[i]){
+					now_eph = ephs[j];
+					// Satellite Position.
+					SatPos();
 				}
-
-
+				else{
+					std::cout<<"No Navigation messages for PRN #";
+					std::cout<<now_obs.PRN_s[i];
+					std::cout<<" \n";
+				}
 			}
+
 		}
 
 
@@ -592,13 +621,14 @@ void GNSS_f::Positioning(){
 	for (auto e : Obss)
 	{
 		now_obs = e;
-		// 1. Find T_k
-		Find_T_k();
+		// 1. Find GPS_week_sec
+		Find_GPS_week_sec();
 
-		// 2. Find L1 measurements of the satellite observed at T_k
+		// 2. Find L1 measurements of the satellite observed at GPS_week_sec
+		// 3. and FInd Satellite's position
 		gps_L1();
 
-		// 3. Find Satellites' position
+		
 
 
 		// 4. Find Receiver's position using Least Square Estimation

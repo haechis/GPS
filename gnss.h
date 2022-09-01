@@ -18,7 +18,11 @@ private:
     std::string DOY;
 
 public:
+
     GNSS_f();
+
+	double gps_Omega_dot_e = 7.2921151467e-5;
+	double gps_mu = 3.986005e14; // 
 
     // File variation
     std::string File_obs;
@@ -53,7 +57,7 @@ public:
 		int prn;
 		double t_oe;
 		double a, b, c, t_gd;
-		double sqrtA;
+		double sqrt_A;
 		double e;
 		double i_0, i_dot;
 		double Omega_dot, omega, Omega_0;
@@ -65,13 +69,14 @@ public:
 		double week_num;
 		double health;
 		double IODC;
+		eph(){}
 		eph(int PPRN, double* V) {
 			prn = PPRN;
 			t_oe = V[1];
 			a = V[2];
 			b = V[3];
 			c = V[4];
-			sqrtA = V[12];
+			sqrt_A = V[12];
 			e = V[10];
 			i_0 = V[17];
 			i_dot = V[21];
@@ -139,9 +144,12 @@ public:
 	// Satellite's position.
 	void Positioning();
 	Obs now_obs;
-	double T_k;
-	void Find_T_k();
+	eph now_eph;
+	double GPS_week_sec;
+	void Find_GPS_week_sec();
 	void gps_L1();
+
+	void SatPos(); // Calculate Satellite's Position.
 	
 };
 
