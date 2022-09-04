@@ -34,6 +34,8 @@ int main(void){
 	// Positioning as much as the number of Obss
 	Gps.Positioning();
 
+	std::cout<<"뭔가 xyz값이 이상함;";
+
 
 	return 0;
 

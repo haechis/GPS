@@ -50,18 +50,19 @@ public:
 	void ReadObs_Header_Type();
 	void ReadObs_Header_Meas();
 	void ReadObs(std::string fp);
-
+	
+	double Find_t_oe(double t);
     struct eph {
 		char GNSS_type; // G R E C J ...
 
 		int prn;
 		double t_oe;
 		double a, b, c, t_gd;
-		double sqrt_A;
-		double e;
+		double sqrt_A, e;
 		double i_0, i_dot;
 		double Omega_dot, omega, Omega_0;
 		double dn;
+		double M_0;
 		double C_uc, C_us;
 		double C_rc, C_rs;
 		double C_ic, C_is;
@@ -72,7 +73,7 @@ public:
 		eph(){}
 		eph(int PPRN, double* V) {
 			prn = PPRN;
-			t_oe = V[1];
+			t_oe = V[13];
 			a = V[2];
 			b = V[3];
 			c = V[4];
@@ -84,6 +85,7 @@ public:
 			omega = V[19];
 			Omega_0 = V[15];
 			dn = V[7];
+			M_0 = V[8];
 			C_uc = V[9];
 			C_us = V[11];
 			C_rc = V[18];
@@ -146,7 +148,10 @@ public:
 	Obs now_obs;
 	eph now_eph;
 	double GPS_week_sec;
+	
+	double EccentricityAnomaly(double M_k);
 	void Find_GPS_week_sec();
+	
 	void gps_L1();
 
 	void SatPos(); // Calculate Satellite's Position.
