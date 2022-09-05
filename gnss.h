@@ -144,6 +144,16 @@ public:
     void ReadNav(std::string fp);
     
 	// Satellite's position.
+	struct Sat_Pos_temp{
+		double x,y,z;
+		int prn;
+		double obs;
+		std::string sig_type;
+
+		
+	};
+	// std::vector<Sat_Pos_temp> Sat_Pos;
+
 	void Positioning();
 	Obs now_obs;
 	eph now_eph;
@@ -154,7 +164,7 @@ public:
 	
 	void gps_L1();
 
-	void SatPos(); // Calculate Satellite's Position.
+	Sat_Pos_temp SatPos(); // Calculate Satellite's Position.
 	
 };
 

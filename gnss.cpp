@@ -555,21 +555,22 @@ void GNSS_f::Find_GPS_week_sec(){
 double GNSS_f::EccentricityAnomaly(double M_k){
 	double E_k;
 	E_k = M_k + now_eph.e * sin(M_k);
-	for (int i = 1; i < 4; i ++){
+	for (int i = 1; i < 5; i ++){
 		E_k = M_k +  now_eph.e * sin(M_k);
 	}
 
 	return E_k;
 }
 
-void GNSS_f::SatPos(){
+GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	// use: now_eph / GPS_week_sec
 	double T_k = GPS_week_sec - now_eph.t_oe;
+	// printf("GS: %6.3f, T_oe: %6.3f \n", GPS_week_sec, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
 
 	double n = n_0 + now_eph.dn;
-	double M_k = now_eph.M_0 * T_k;
+	double M_k = now_eph.M_0 + n * T_k;
 	double E_k = EccentricityAnomaly(M_k);
 	double nu_k = atan2((sqrt(1- pow(now_eph.e,2)) * sin(E_k)), cos(E_k)-now_eph.e);
 	double Phi_k = nu_k + now_eph.omega;
@@ -590,14 +591,24 @@ void GNSS_f::SatPos(){
 	double x_k = x_k_ * cos(Omega_k) - y_k_ * cos(i_k) * sin(Omega_k);
 	double y_k = x_k_ * sin(Omega_k) + y_k_ * cos(i_k) * cos(Omega_k);
 	double z_k = y_k_ * sin(i_k);
+	
+	Sat_Pos_temp xyz;
 
-	printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f \n", now_eph.prn, x_k, y_k, z_k);
+	xyz.x = x_k;
+	xyz.y = y_k;
+	xyz.z = z_k;
+	
+	return xyz;
+	// Sat_Pos.push_back(Sat_Pos_temp);
+	// printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f \n", now_eph.prn, x_k, y_k, z_k);
 
 }
 
 void GNSS_f::gps_L1(){
 	std::string tmp;
 	std::cout<<"<GPS L1> \n";
+
+	std::vector<Sat_Pos_temp> Sat_Pos;
 
 	for (int i = 0; i < now_obs.pn; i++){
 		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="C1")
@@ -615,28 +626,26 @@ void GNSS_f::gps_L1(){
 				
 			// ephemeris에서 필요한 정보를 찾기
 			for (int j = 0; j< sizeof(ephs);j++){
-
 				// std::cout<<"\n To Do: 내비게이션 파일 첫 데이터가 이전 날짜라서, 시간 +- 3600 내의 데이터만 쓰도록!\n ";
-
 
 				// time. 현재 시간 이전의 broadcast 값 읽기.
 				if (ephs[j].t_oe >= GPS_week_sec && ephs[j].t_oe <= GPS_week_sec + 7200 && ephs[j].prn == now_obs.PRN_s[i])
 				{
 					now_eph = ephs[j];
-					SatPos();
+					Sat_Pos_temp xyz = SatPos();
+					xyz.prn = now_obs.PRN_s[i];
+					xyz.obs = now_obs.MEAS_s[i];
+					xyz.sig_type = now_obs.signal_type[i];
+					Sat_Pos.push_back(xyz);
 					break;
 				}
-				
-				
-				
-			}
 
+			}
 		}
 
-
-
 	}
-
+	// 오차 고려하여 Least Squared Estimation으로 사용자 좌표 구하기.
+	// Sat_Pos 
 
 }
 
