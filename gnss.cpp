@@ -562,9 +562,22 @@ double GNSS_f::EccentricityAnomaly(double M_k){
 	return E_k;
 }
 
+double GNSS_f::Relative_BRDC(){
+	double F = 4.442807633e-10;
+	double A = pow(now_eph.sqrt_A,2);
+	double n_0 = sqrt(gps_mu / pow(A,3));
+
+	double n = n_0 + now_eph.dn;
+	double M_k = now_eph.M_0 + n * (GPS_week_sec - now_obs_meas/gps_SoL - now_eph.t_oe);
+	double E_k = EccentricityAnomaly(M_k);
+	double T_rel = F * now_eph.e * now_eph.sqrt_A * sin(E_k);
+
+	return T_rel;
+}
+
 GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	// use: now_eph / GPS_week_sec
-	double T_k = GPS_week_sec - now_eph.t_oe;
+	double T_k = GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe; // GS - Signal Transmission Time - Toe
 	// printf("GS: %6.3f, T_oe: %6.3f \n", GPS_week_sec, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
@@ -592,11 +605,21 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	double y_k = x_k_ * sin(Omega_k) + y_k_ * cos(i_k) * cos(Omega_k);
 	double z_k = y_k_ * sin(i_k);
 	
+	// Satellite Rotation.
+	double theta = gps_Omega_dot_e * now_obs_meas / gps_SoL;
+	double x_k_r = x_k * cos(theta) + y_k * sin(theta);
+	double y_k_r = -x_k * sin(theta) + y_k * cos(theta);
+
 	Sat_Pos_temp xyz;
 
-	xyz.x = x_k;
-	xyz.y = y_k;
+	xyz.x = x_k_r;
+	xyz.y = y_k_r;
 	xyz.z = z_k;
+	
+	double T_rel = Relative_BRDC();
+	xyz.dt_sat = now_eph.a + now_eph.b * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + now_eph.c * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + T_rel- now_eph.t_gd;
+
+	
 	
 	return xyz;
 	// Sat_Pos.push_back(Sat_Pos_temp);
@@ -604,11 +627,66 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 
 }
 
+double L2_Norm_3D(double a, double b, double c){
+	return sqrt(pow(a,2) + pow(b,2) + pow(c,2));
+}
+
+void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
+	for (int k = 0; k<5;k++){
+	Eigen::Vector4d H, xHat;
+	Eigen::Matrix4d H_tp_H;
+	Eigen::Vector4d H_tp_y;
+
+	Eigen::Vector3d LoS_vec, now_UserPos;
+	
+	 
+	now_UserPos[0] = UserPos[0];
+	now_UserPos[1] = UserPos[1];
+	now_UserPos[2] = UserPos[2];
+	
+	int PRN_used = 0;
+
+	double LoS;
+
+	double Computed, y;
+
+
+	for (int i = 0; i<sizeof(Sat_Pos_values);i++){
+		LoS_vec << Sat_Pos_values[i].x - now_UserPos[0], Sat_Pos_values[i].y - now_UserPos[1], Sat_Pos_values[i].z - now_UserPos[2];
+
+		//LoS = Sat_Pos_values[i].obs - L2_Norm_3D(Sat_Pos_values[i].x,Sat_Pos_values[i].y,Sat_Pos_values[i].z);
+		LoS = LoS_vec.norm();
+
+		Computed = LoS + now_UserPos[3] - gps_SoL * Sat_Pos_values[i].dt_sat;
+		y = Sat_Pos_values[i].obs - Computed;
+		H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
+		H_tp_H = H_tp_H + H * H.transpose();
+		H_tp_y = H_tp_y + H * y;
+		PRN_used++;
+	}
+	xHat = H_tp_H.inverse() * H_tp_y;
+
+	now_UserPos[0] = now_UserPos[0] + xHat[0];
+	now_UserPos[1] = now_UserPos[1] + xHat[1];
+	now_UserPos[2] = now_UserPos[2] + xHat[2];
+
+	if (xHat.norm() < 1e-5){
+		UserPos[0] = now_UserPos[0];
+		UserPos[1] = now_UserPos[1];
+		UserPos[2] = now_UserPos[2];
+		
+		break;
+	}
+	}
+
+
+}
+
 void GNSS_f::gps_L1(){
 	std::string tmp;
 	std::cout<<"<GPS L1> \n";
 
-	std::vector<Sat_Pos_temp> Sat_Pos;
+	std::vector<Sat_Pos_temp> Sat_Pos_values;
 
 	for (int i = 0; i < now_obs.pn; i++){
 		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="C1")
@@ -631,12 +709,14 @@ void GNSS_f::gps_L1(){
 				// time. 현재 시간 이전의 broadcast 값 읽기.
 				if (ephs[j].t_oe >= GPS_week_sec && ephs[j].t_oe <= GPS_week_sec + 7200 && ephs[j].prn == now_obs.PRN_s[i])
 				{
+
 					now_eph = ephs[j];
+					now_obs_meas = now_obs.MEAS_s[i];
 					Sat_Pos_temp xyz = SatPos();
 					xyz.prn = now_obs.PRN_s[i];
 					xyz.obs = now_obs.MEAS_s[i];
 					xyz.sig_type = now_obs.signal_type[i];
-					Sat_Pos.push_back(xyz);
+					Sat_Pos_values.push_back(xyz);
 					break;
 				}
 
@@ -645,7 +725,9 @@ void GNSS_f::gps_L1(){
 
 	}
 	// 오차 고려하여 Least Squared Estimation으로 사용자 좌표 구하기.
-	// Sat_Pos 
+	// 
+	PosEstimation_LS(Sat_Pos_values);
+	std::cout<<"X: %6.3f, Y: %6.3f, Z: %6.3f \n", UserPos[0], UserPos[1], UserPos[2];
 
 }
 

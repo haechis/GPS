@@ -5,11 +5,17 @@
 
 int main(void){
 	
+
+
+
 	// GNSS target Site and DOY
 	std::string site = "SEOS";
 	std::string doy = "032";
 	
 	GNSS_f Gps;
+
+	// User Position Initiation
+	Gps.UserPos << -3042000, 4112000, 3847000, 1;
 
 	Gps.setSite(site);
 	Gps.setDOY(doy);
@@ -34,7 +40,7 @@ int main(void){
 	// Positioning as much as the number of Obss
 	Gps.Positioning();
 
-	std::cout<<"뭔가 xyz값이 이상함;";
+	 
 
 
 	return 0;

@@ -22,7 +22,8 @@ public:
     GNSS_f();
 
 	double gps_Omega_dot_e = 7.2921151467e-5;
-	double gps_mu = 3.986005e14; // 
+	double gps_mu = 3.986005e14; //
+	double gps_SoL = 299792458;
 
     // File variation
     std::string File_obs;
@@ -148,23 +149,28 @@ public:
 		double x,y,z;
 		int prn;
 		double obs;
+		double dt_sat;
 		std::string sig_type;
 
 		
 	};
 	// std::vector<Sat_Pos_temp> Sat_Pos;
-
+	double L2_Norm_3D(double a, double b, double c);
 	void Positioning();
 	Obs now_obs;
+	double now_obs_meas;
 	eph now_eph;
 	double GPS_week_sec;
 	
 	double EccentricityAnomaly(double M_k);
 	void Find_GPS_week_sec();
+	double Relative_BRDC();
 	
 	void gps_L1();
 
 	Sat_Pos_temp SatPos(); // Calculate Satellite's Position.
-	
+	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos); // LS: Least Square estimation
+
+	Eigen::Vector4d UserPos;
 };
 
