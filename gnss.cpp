@@ -639,7 +639,7 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 
 	Eigen::Vector3d LoS_vec, now_UserPos;
 	
-	 
+	 printf("\niter: %2d \n", k);
 	now_UserPos[0] = UserPos[0];
 	now_UserPos[1] = UserPos[1];
 	now_UserPos[2] = UserPos[2];
@@ -653,19 +653,26 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 
 	for (int i = 0; i<sizeof(Sat_Pos_values);i++){
 		LoS_vec << Sat_Pos_values[i].x - now_UserPos[0], Sat_Pos_values[i].y - now_UserPos[1], Sat_Pos_values[i].z - now_UserPos[2];
-
+		
 		//LoS = Sat_Pos_values[i].obs - L2_Norm_3D(Sat_Pos_values[i].x,Sat_Pos_values[i].y,Sat_Pos_values[i].z);
 		LoS = LoS_vec.norm();
-
-		Computed = LoS + now_UserPos[3] - gps_SoL * Sat_Pos_values[i].dt_sat;
+		
+		printf("prn: %d, LoS: %6.3f, cdtr: %6.3f, dt_sat: %6.3f \n", Sat_Pos_values[i].prn,LoS, UserPos[3], gps_SoL * Sat_Pos_values[i].dt_sat);
+		Computed = LoS + UserPos[3] - gps_SoL * Sat_Pos_values[i].dt_sat;
 		y = Sat_Pos_values[i].obs - Computed;
+		
 		H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
+		
 		H_tp_H = H_tp_H + H * H.transpose();
+		
 		H_tp_y = H_tp_y + H * y;
+		
 		PRN_used++;
 	}
+	
 	xHat = H_tp_H.inverse() * H_tp_y;
 
+	
 	now_UserPos[0] = now_UserPos[0] + xHat[0];
 	now_UserPos[1] = now_UserPos[1] + xHat[1];
 	now_UserPos[2] = now_UserPos[2] + xHat[2];
@@ -717,6 +724,7 @@ void GNSS_f::gps_L1(){
 					xyz.obs = now_obs.MEAS_s[i];
 					xyz.sig_type = now_obs.signal_type[i];
 					Sat_Pos_values.push_back(xyz);
+					printf("prn: %2d, x: %6.3f, y: %6.3f, z: %6.3f, obs: %6.3f, dtsat: %6.3f", xyz.prn, xyz.x, xyz.y, xyz.z, xyz.obs, xyz.dt_sat); 
 					break;
 				}
 
@@ -724,6 +732,7 @@ void GNSS_f::gps_L1(){
 		}
 
 	}
+	// 여기서 값을 확인해보자.
 	// 오차 고려하여 Least Squared Estimation으로 사용자 좌표 구하기.
 	// 
 	PosEstimation_LS(Sat_Pos_values);
