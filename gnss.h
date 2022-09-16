@@ -151,6 +151,7 @@ public:
 		double obs;
 		double dt_sat;
 		std::string sig_type;
+		//int num_sat;
 
 		
 	};
@@ -169,8 +170,8 @@ public:
 	void gps_L1();
 
 	Sat_Pos_temp SatPos(); // Calculate Satellite's Position.
-	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos); // LS: Least Square estimation
-
+	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos, int num_Sats); // LS: Least Square estimation
+	
 	Eigen::Vector4d UserPos;
 };
 
