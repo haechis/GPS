@@ -96,6 +96,7 @@ public:
 			IODE = V[5];
 			week_num = V[23];
 			health = V[26];
+			t_gd = V[27];
 			IODC = V[28];
 		}
     }; // struct eph.
@@ -152,8 +153,6 @@ public:
 		double dt_sat;
 		std::string sig_type;
 		//int num_sat;
-
-		
 	};
 	// std::vector<Sat_Pos_temp> Sat_Pos;
 	double L2_Norm_3D(double a, double b, double c);
@@ -170,7 +169,7 @@ public:
 	void gps_L1();
 
 	Sat_Pos_temp SatPos(); // Calculate Satellite's Position.
-	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos, int num_Sats); // LS: Least Square estimation
+	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos); // LS: Least Square estimation
 	
 	Eigen::Vector4d UserPos;
 };

@@ -555,15 +555,15 @@ void GNSS_f::Find_GPS_week_sec(){
 double GNSS_f::EccentricityAnomaly(double M_k){
 	double E_k;
 	E_k = M_k + now_eph.e * sin(M_k);
-	for (int i = 1; i < 5; i ++){
-		E_k = M_k +  now_eph.e * sin(M_k);
+	for (int i = 0; i < 5; i ++){
+		E_k = M_k +  now_eph.e * sin(E_k);
 	}
 
 	return E_k;
 }
 
 double GNSS_f::Relative_BRDC(){
-	double F = 4.442807633e-10;
+	double F = -4.442807633e-10;
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
 
@@ -577,7 +577,9 @@ double GNSS_f::Relative_BRDC(){
 
 GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	// use: now_eph / GPS_week_sec
+	
 	double T_k = GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe; // GS - Signal Transmission Time - Toe
+	printf("T_k: %20.18f, GPS_week_sec: %20.18f, STT: %20.18f, toe: %20.18f \n",T_k , GPS_week_sec, now_obs_meas / gps_SoL, now_eph.t_oe);
 	// printf("GS: %6.3f, T_oe: %6.3f \n", GPS_week_sec, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
@@ -616,14 +618,16 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	xyz.y = y_k_r;
 	xyz.z = z_k;
 	
-	double T_rel = Relative_BRDC();
-	xyz.dt_sat = now_eph.a + now_eph.b * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + now_eph.c * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + T_rel- now_eph.t_gd;
+	double T_rel = -4.442807633e-10 *  now_eph.e * now_eph.sqrt_A * sin(E_k);
+	// Relative_BRDC();
+	
+	xyz.dt_sat = now_eph.a + now_eph.b * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + now_eph.c * pow((GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe),2) + T_rel - now_eph.t_gd;
 
 	
-	
-	return xyz;
 	// Sat_Pos.push_back(Sat_Pos_temp);
-	// printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f \n", now_eph.prn, x_k, y_k, z_k);
+	printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f \n", now_eph.prn, x_k_r, y_k_r, z_k);
+	return xyz;
+	
 
 }
 
@@ -631,59 +635,67 @@ double L2_Norm_3D(double a, double b, double c){
 	return sqrt(pow(a,2) + pow(b,2) + pow(c,2));
 }
 
-void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values, int vec_size){
-	for (int k = 0; k<5;k++){
+void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 	Eigen::Vector4d H, xHat;
 	Eigen::Matrix4d H_tp_H;
 	Eigen::Vector4d H_tp_y;
 
 	Eigen::Vector3d LoS_vec, now_UserPos;
 	
-	 printf("\niter: %2d \n", k);
+		 
 	now_UserPos[0] = UserPos[0];
 	now_UserPos[1] = UserPos[1];
 	now_UserPos[2] = UserPos[2];
 	
-	int PRN_used = 0;
+	
 
 	double LoS;
 
 	double Computed, y;
+	double cdtr = UserPos[3];
+	for (int k = 0; k < 5; k++){
+		// H_tp_H << 0,0,0,0; 
+		H_tp_H.setZero();
+		H_tp_y.setZero();
+		int PRN_used = 0;
+		
+		for (int i = 0; i < Sat_Pos_values.size();i++){
+			// printf("\niter: %2d \n", i);
+			LoS_vec << Sat_Pos_values[i].x - now_UserPos[0], Sat_Pos_values[i].y - now_UserPos[1], Sat_Pos_values[i].z - now_UserPos[2];
+		
+			//LoS = Sat_Pos_values[i].obs - L2_Norm_3D(Sat_Pos_values[i].x,Sat_Pos_values[i].y,Sat_Pos_values[i].z);
+			LoS = LoS_vec.norm();
 
+			Computed = LoS + cdtr - gps_SoL * Sat_Pos_values[i].dt_sat;
 
-	for (int i = 0; vec_size;i++){
-		LoS_vec << Sat_Pos_values[i].x - now_UserPos[0], Sat_Pos_values[i].y - now_UserPos[1], Sat_Pos_values[i].z - now_UserPos[2];
+			y = Sat_Pos_values[i].obs - Computed;
 		
-		//LoS = Sat_Pos_values[i].obs - L2_Norm_3D(Sat_Pos_values[i].x,Sat_Pos_values[i].y,Sat_Pos_values[i].z);
-		LoS = LoS_vec.norm();
+			printf("prn: %d, obs: %6.3f, LoS: %6.3f, cdtr: %6.3f, dt_sat: %6.3f, Computed: %6.3f y: %6.3f \n", Sat_Pos_values[i].prn,Sat_Pos_values[i].obs, LoS, cdtr, gps_SoL * Sat_Pos_values[i].dt_sat, Computed, y);
+
+			H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
 		
-		printf("prn: %d, LoS: %6.3f, cdtr: %6.3f, dt_sat: %6.3f \n", Sat_Pos_values[i].prn,LoS, UserPos[3], gps_SoL * Sat_Pos_values[i].dt_sat);
-		Computed = LoS + UserPos[3] - gps_SoL * Sat_Pos_values[i].dt_sat;
-		y = Sat_Pos_values[i].obs - Computed;
+			H_tp_H = H_tp_H + H * H.transpose();
+			
+			H_tp_y = H_tp_y + H * y;
 		
-		H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
-		
-		H_tp_H = H_tp_H + H * H.transpose();
-		
-		H_tp_y = H_tp_y + H * y;
-		
-		PRN_used++;
-	}
+			PRN_used++;
+		}
 	
-	xHat = H_tp_H.inverse() * H_tp_y;
-
+		xHat = H_tp_H.inverse() * H_tp_y;
+		printf("XHat: %6.3f, YHat: %6.3f, ZHat: %6.3f \n", xHat[0], xHat[1], xHat[2]);
 	
-	now_UserPos[0] = now_UserPos[0] + xHat[0];
-	now_UserPos[1] = now_UserPos[1] + xHat[1];
-	now_UserPos[2] = now_UserPos[2] + xHat[2];
-
-	if (xHat.norm() < 1e-5){
-		UserPos[0] = now_UserPos[0];
-		UserPos[1] = now_UserPos[1];
-		UserPos[2] = now_UserPos[2];
-		
-		break;
-	}
+		now_UserPos[0] = now_UserPos[0] + xHat[0];
+		now_UserPos[1] = now_UserPos[1] + xHat[1];
+		now_UserPos[2] = now_UserPos[2] + xHat[2];
+		cdtr += xHat[3];
+		if (xHat.norm() < 1e-5){
+			printf("Converged!\n");
+			UserPos[0] = now_UserPos[0];
+			UserPos[1] = now_UserPos[1];
+			UserPos[2] = now_UserPos[2];
+			UserPos[3] = cdtr;
+			break;
+		}
 	}
 
 
@@ -695,8 +707,7 @@ void GNSS_f::gps_L1(){
 
 	std::vector<Sat_Pos_temp> Sat_Pos_values; // 초기화 했는데 크기가 24로 되어있음..;
 	
-	printf("처음 sat크기 : %lu \n", sizeof(Sat_Pos_values));
-	
+		
 	int vec_size = 0;
 
 	for (int i = 0; i < now_obs.pn; i++){
@@ -714,13 +725,16 @@ void GNSS_f::gps_L1(){
 				
 				
 			// ephemeris에서 필요한 정보를 찾기
-			for (int j = 0; j< sizeof(ephs);j++){
+			for (int j = 0; j< ephs.size();j++){
 				// std::cout<<"\n To Do: 내비게이션 파일 첫 데이터가 이전 날짜라서, 시간 +- 3600 내의 데이터만 쓰도록!\n ";
+				if (now_obs.PRN_s[i] == 25){ ///////////////////////
+					continue;
+				}
 
 				// time. 현재 시간 이전의 broadcast 값 읽기.
 				if ((ephs[j].t_oe >= GPS_week_sec && ephs[j].t_oe <= GPS_week_sec + 7200) && (ephs[j].prn == now_obs.PRN_s[i]))
 				{
-					printf("prn: %2d, Toe: %6.3f, GS: %6.3f \n", ephs[j].prn, ephs[j].t_oe, GPS_week_sec); 
+					// printf("prn: %2d, Toe: %6.3f, GS: %6.3f \n", ephs[j].prn, ephs[j].t_oe, GPS_week_sec); 
 					now_eph = ephs[j];
 					now_obs_meas = now_obs.MEAS_s[i];
 					Sat_Pos_temp xyz = SatPos();
@@ -741,7 +755,7 @@ void GNSS_f::gps_L1(){
 	// std::vector<Sat_Pos_temp> slice;
 	// slice.assign(Sat_Pos_values.begin() + 1, Sat_Pos_values.begin() + vec_size);	
 	// (Sat_Pos_values.begin() , Sat_Pos_values.begin() + vec_size - 1);
-	// printf("22 sat크기 : %lu vec size 크기: %d \n", sizeof(slice), vec_size);
+	// printf("22 sat크기 : %lu vec size 크기: %d \n", Sat_Pos_values.size(), vec_size);
 	
 	// 여기서 값을 확인해보자.
 	// 오차 고려하여 Least Squared Estimation으로 사용자 좌표 구하기.
@@ -750,8 +764,8 @@ void GNSS_f::gps_L1(){
 		//     printf("#: %d, prn: %d, obs: %6.3f \n", q, Sat_Pos_values[q].prn, Sat_Pos_values[q].obs);
 	}
 
-	PosEstimation_LS(Sat_Pos_values, vec_size);
-	//     std::cout<<"X: %6.3f, Y: %6.3f, Z: %6.3f \n", UserPos[0], UserPos[1], UserPos[2];
+	PosEstimation_LS(Sat_Pos_values);
+	printf("X: %6.3f, Y: %6.3f, Z: %6.3f \n", UserPos[0], UserPos[1], UserPos[2]);
 
 }
 

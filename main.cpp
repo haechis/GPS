@@ -15,7 +15,7 @@ int main(void){
 	GNSS_f Gps;
 
 	// User Position Initiation
-	Gps.UserPos << -3042000, 4112000, 3847000, 1;
+	Gps.UserPos << -3042060, 4111978, 3797578, 1;
 
 	Gps.setSite(site);
 	Gps.setDOY(doy);
