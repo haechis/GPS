@@ -108,76 +108,88 @@ double GNSS_f::Find_t_oe(double t){
 	return fmod(t, 86400);
 }
 
+double GNSS_f::DtoE(std::string s, int a, int b){
+	double rtn;
+	std::string s_ = "1e" + s.substr(a,b);
+	rtn = stod(s_);
+	return rtn;
+}
+
+
 void GNSS_f::ReadEph(){
     int k= 0;
 	
     while (std::getline(input_file, line)){
         double V[31];
         int prn_n = std::stoi(line.substr(0,2));
-		
+		std::cout.precision(12);
         V[0] = prn_n;
-		V[1] = std::stod(line.substr(12, 2)) * 3600 + std::stod(line.substr(15, 2)) * 60 + std::stod(line.substr(18, 2)); // toe
-		V[2] = str2double(line, 22, 40); // a [sec]
-		V[3] = str2double(line, 41, 59); // b [sec/sec]
-		V[4] = str2double(line, 60, 78); // c [sec/sec2]
-		//std::cout << V[3] << std::endl;
+		V[1] = std::stod(line.substr(12, 2)) * 3600 + std::stod(line.substr(15, 2)) * 60 + std::stod(line.substr(18, 2)); // 
+		V[2] = stod(line.substr(22,15)) * DtoE(line,38,4); // a [sec]
+		V[3] = stod(line.substr(41,15)) * DtoE(line,57,4); // b [sec/sec]
+		V[4] = stod(line.substr(60,15)) * DtoE(line,76,4); // c [sec/sec2]
+		std::cout << V[3] << std::endl;
 
 		// line 2
 		std::getline(input_file, line);
 
-		V[5] = str2double(line, 3, 21); // IODE
-		V[6] = str2double(line, 22, 40); // Crs [meters]
-		V[7] = str2double(line, 41, 59); // dn [rad/sec]
-		V[8] = str2double(line, 60, 78); // M0 [rad]
-		//std::cout << V[8] << std::endl;
+		V[5] = stod(line.substr(3,18)); // IODE
+		V[6] = stod(line.substr(22,18)) * DtoE(line,38,4); // Crs [meters]
+		V[7] = stod(line.substr(41,18)); // dn [rad/sec]
+		V[8] = stod(line.substr(60,19)) * DtoE(line,76,4); // M0 [rad]
+		std::cout << V[8] << std::endl;
 
 		// line 3
 		std::getline(input_file, line);
 
-		V[9] = str2double(line, 3, 21); // C uc [rad]
-		V[10] = str2double(line, 22, 40); // eccentricity
-		V[11] = str2double(line, 41, 59); //C us [rad]
-		V[12] = str2double(line, 60, 78); //square root A [sqrt(m)]
+		V[9] =  stod(line.substr(3 ,18)); // C uc [rad]
+		V[10] = stod(line.substr(22,18)) * DtoE(line,38,4); // eccentricity
+		V[11] = stod(line.substr(41,18)); //C us [rad]
+		//V[12] = str2double(line, 60, 78); //square root A [sqrt(m)]
+		//std::cout << V[12] << std::endl;
+		//printf("1. %f\n", V[12]);
+		V[12] = stod(line.substr(60,18));
+		//printf("1. %15.12f\n", V[12]);
 
 		// line 4
 		std::getline(input_file, line);
 
-		V[13] = Find_t_oe(str2double(line, 3, 21)); // Toe [sec of GPS week]
-		V[14] = str2double(line, 22, 40); // C ic [rad]
-		V[15] = str2double(line, 41, 59); // Omega 0 [rad]
-		V[16] = str2double(line, 60, 78); // C is [rad]
+		V[13] = Find_t_oe(stod(line.substr(3,18))); // Toe [sec of GPS week]
+		V[14] = stod(line.substr(22,18)) * DtoE(line,38,4); // C ic [rad]
+		V[15] = stod(line.substr(41,18)); // Omega 0 [rad]
+		V[16] = stod(line.substr(60,18)); // C is [rad]
 
 		// line 5
 		std::getline(input_file, line);
 
-		V[17] = str2double(line, 3, 21); //i0 [rad]
-		V[18] = str2double(line, 22, 40); // Crc [meters]
-		V[19] = str2double(line, 41, 59); // omega [rad]
-		V[20] = str2double(line, 60, 78); // Omega dot [rad/sec]
+		V[17] = stod(line.substr(3,18)); //i0 [rad]
+		V[18] = stod(line.substr(22,18)) * DtoE(line,38,4); // Crc [meters]
+		V[19] = stod(line.substr(41,18)); // omega [rad]
+		V[20] = stod(line.substr(60,18)); // Omega dot [rad/sec]
 
 		// line 6
 		std::getline(input_file, line); 
 
-		V[21] = str2double(line, 3, 21); // IDOT [rad/sec]
-		V[22] = str2double(line, 22, 40); // Codes on L2 channel
-		V[23] = str2double(line, 41, 59); // GPS Week #
-		V[24] = str2double(line, 60, 78); // L2P data flag
+		V[21] = stod(line.substr(3,18)); // IDOT [rad/sec]
+		V[22] = stod(line.substr(22,18)) * DtoE(line,38,4); // Codes on L2 channel
+		V[23] = stod(line.substr(41,18)); // GPS Week #
+		V[24] = stod(line.substr(60,18)); // L2P data flag
 
 		// line 7
 		std::getline(input_file, line);
 
-		V[25] = str2double(line, 3, 21); // SV accuracy
-		V[26] = str2double(line, 22, 40); // SV health
-		V[27] = str2double(line, 41, 59); // TGD [sec]
-		V[28] = str2double(line, 60, 78); // IODC
+		V[25] = stod(line.substr(3,18)); // SV accuracy
+		V[26] = stod(line.substr(22,18)) * DtoE(line,38,4); // SV health
+		V[27] = stod(line.substr(41,18)); // TGD [sec]
+		V[28] = stod(line.substr(60,18)); // IODC
 
 		// line 8
 		std::getline(input_file, line);
 
-		V[29] = str2double(line, 3, 21); // transmission time of message
-		V[30] = str2double(line, 22, 40);
-		//V[31] = str2double(line, 41, 59);
-		//V[32] = str2double(line, 60, 78);
+		V[29] = stod(line.substr(3 ,18)); // transmission time of message
+		V[30] = stod(line.substr(22,18));
+		//V[31] = stod(line.substr(41,18));
+		//V[32] = stod(line.substr(60,18));
 
 		ephs.push_back(eph(prn_n, V));
 
@@ -608,7 +620,7 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	double z_k = y_k_ * sin(i_k);
 	
 	// Satellite Rotation.
-	double theta = gps_Omega_dot_e * now_obs_meas / gps_SoL;
+	double theta = gps_Omega_dot_e * (now_obs_meas / gps_SoL);
 	double x_k_r = x_k * cos(theta) + y_k * sin(theta);
 	double y_k_r = -x_k * sin(theta) + y_k * cos(theta);
 
@@ -647,18 +659,19 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 	now_UserPos[1] = UserPos[1];
 	now_UserPos[2] = UserPos[2];
 	
-	
+	// state vector: [now_UserPos, cdtr]';
 
 	double LoS;
 
 	double Computed, y;
 	double cdtr = UserPos[3];
+	int PRN_used;
 	for (int k = 0; k < 5; k++){
 		// H_tp_H << 0,0,0,0; 
 		H_tp_H.setZero();
 		H_tp_y.setZero();
-		int PRN_used = 0;
-		
+		PRN_used = 0;
+
 		for (int i = 0; i < Sat_Pos_values.size();i++){
 			// printf("\niter: %2d \n", i);
 			LoS_vec << Sat_Pos_values[i].x - now_UserPos[0], Sat_Pos_values[i].y - now_UserPos[1], Sat_Pos_values[i].z - now_UserPos[2];
@@ -675,7 +688,7 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 			H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
 		
 			H_tp_H = H_tp_H + H * H.transpose();
-			
+			 
 			H_tp_y = H_tp_y + H * y;
 		
 			PRN_used++;
@@ -684,9 +697,9 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 		xHat = H_tp_H.inverse() * H_tp_y;
 		printf("XHat: %6.3f, YHat: %6.3f, ZHat: %6.3f \n", xHat[0], xHat[1], xHat[2]);
 	
-		now_UserPos[0] = now_UserPos[0] + xHat[0];
-		now_UserPos[1] = now_UserPos[1] + xHat[1];
-		now_UserPos[2] = now_UserPos[2] + xHat[2];
+		now_UserPos[0] +=  xHat[0];
+		now_UserPos[1] +=  xHat[1];
+		now_UserPos[2] +=  xHat[2];
 		cdtr += xHat[3];
 		if (xHat.norm() < 1e-5){
 			printf("Converged!\n");

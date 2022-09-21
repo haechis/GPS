@@ -43,7 +43,7 @@ public:
 
 	void ReadFile(std::string fp);
 	void CloseFile();
-
+	double DtoE(std::string s, int a, int b);
     void setRINEX(); // rinex file naming.
     void ReadEph();
 
