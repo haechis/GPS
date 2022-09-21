@@ -41,7 +41,7 @@ int GNSS_f::str2int(std::string s, int a, int b) {
 double GNSS_f::str2double2(std::string s, int a, int b) {
 
 	//double x =
-		return std::stof(s.substr(a, b - a + 1));
+		return std::stod(s.substr(a, b));
 }
 
 
@@ -125,69 +125,72 @@ void GNSS_f::ReadEph(){
 		std::cout.precision(12);
         V[0] = prn_n;
 		V[1] = std::stod(line.substr(12, 2)) * 3600 + std::stod(line.substr(15, 2)) * 60 + std::stod(line.substr(18, 2)); // 
-		V[2] = stod(line.substr(22,15)) * DtoE(line,38,4); // a [sec]
-		V[3] = stod(line.substr(41,15)) * DtoE(line,57,4); // b [sec/sec]
-		V[4] = stod(line.substr(60,15)) * DtoE(line,76,4); // c [sec/sec2]
-		std::cout << V[3] << std::endl;
+		V[2] = stod(line.substr(22,15)) * DtoE(line,38,3); // a [sec]
+		V[3] = stod(line.substr(41,15)) * DtoE(line,57,3); // b [sec/sec]
+		V[4] = stod(line.substr(60,15)) * DtoE(line,76,3); // c [sec/sec2]
+		// std::cout << V[3] << std::endl;
 
 		// line 2
 		std::getline(input_file, line);
 
-		V[5] = stod(line.substr(3,18)); // IODE
-		V[6] = stod(line.substr(22,18)) * DtoE(line,38,4); // Crs [meters]
-		V[7] = stod(line.substr(41,18)); // dn [rad/sec]
-		V[8] = stod(line.substr(60,19)) * DtoE(line,76,4); // M0 [rad]
+		V[5] = stod(line.substr(3,15)) * DtoE(line,19,3); // IODE
+		V[6] = stod(line.substr(22,15)) * DtoE(line,38,3); // Crs [meters]
+		V[7] = stod(line.substr(41,15)) * DtoE(line,57,3); // dn [rad/sec]
+		V[8] = stod(line.substr(60,15)) * DtoE(line,76,3); // M0 [rad]
+		std::cout << V[5] << std::endl;
+		std::cout << V[6] << std::endl;
+		std::cout << V[7] << std::endl;
 		std::cout << V[8] << std::endl;
 
 		// line 3
 		std::getline(input_file, line);
 
-		V[9] =  stod(line.substr(3 ,18)); // C uc [rad]
-		V[10] = stod(line.substr(22,18)) * DtoE(line,38,4); // eccentricity
-		V[11] = stod(line.substr(41,18)); //C us [rad]
+		V[9] =  stod(line.substr(3 ,15)) * DtoE(line,19,3); // C uc [rad]
+		V[10] = stod(line.substr(22,15)) * DtoE(line,38,3); // eccentricity
+		V[11] = stod(line.substr(41,15)) * DtoE(line,57,3); //C us [rad]
 		//V[12] = str2double(line, 60, 78); //square root A [sqrt(m)]
 		//std::cout << V[12] << std::endl;
 		//printf("1. %f\n", V[12]);
-		V[12] = stod(line.substr(60,18));
+		V[12] = stod(line.substr(60,15)) * DtoE(line,76,3);
 		//printf("1. %15.12f\n", V[12]);
 
 		// line 4
 		std::getline(input_file, line);
 
-		V[13] = Find_t_oe(stod(line.substr(3,18))); // Toe [sec of GPS week]
-		V[14] = stod(line.substr(22,18)) * DtoE(line,38,4); // C ic [rad]
-		V[15] = stod(line.substr(41,18)); // Omega 0 [rad]
-		V[16] = stod(line.substr(60,18)); // C is [rad]
+		V[13] = Find_t_oe(stod(line.substr(3,15)) * DtoE(line,19,3)); // Toe [sec of GPS week]
+		V[14] = stod(line.substr(22,15)) * DtoE(line,38,3); // C ic [rad]
+		V[15] = stod(line.substr(41,15)) * DtoE(line,57,3); // Omega 0 [rad]
+		V[16] = stod(line.substr(60,15)) * DtoE(line,76,3); // C is [rad]
 
 		// line 5
 		std::getline(input_file, line);
 
-		V[17] = stod(line.substr(3,18)); //i0 [rad]
-		V[18] = stod(line.substr(22,18)) * DtoE(line,38,4); // Crc [meters]
-		V[19] = stod(line.substr(41,18)); // omega [rad]
-		V[20] = stod(line.substr(60,18)); // Omega dot [rad/sec]
+		V[17] = stod(line.substr(3 ,15)) * DtoE(line,19,3); //i0 [rad]
+		V[18] = stod(line.substr(22,15)) * DtoE(line,38,3); // Crc [meters]
+		V[19] = stod(line.substr(41,15)) * DtoE(line,57,3); // omega [rad]
+		V[20] = stod(line.substr(60,15)) * DtoE(line,76,3); // Omega dot [rad/sec]
 
 		// line 6
 		std::getline(input_file, line); 
 
-		V[21] = stod(line.substr(3,18)); // IDOT [rad/sec]
-		V[22] = stod(line.substr(22,18)) * DtoE(line,38,4); // Codes on L2 channel
-		V[23] = stod(line.substr(41,18)); // GPS Week #
-		V[24] = stod(line.substr(60,18)); // L2P data flag
+		V[21] = stod(line.substr(3 ,15)) * DtoE(line,19,3); // IDOT [rad/sec]
+		V[22] = stod(line.substr(22,15)) * DtoE(line,38,3); // Codes on L2 channel
+		V[23] = stod(line.substr(41,15)) * DtoE(line,57,3); // GPS Week #
+		V[24] = stod(line.substr(60,15)) * DtoE(line,76,3); // L2P data flag
 
 		// line 7
 		std::getline(input_file, line);
 
-		V[25] = stod(line.substr(3,18)); // SV accuracy
-		V[26] = stod(line.substr(22,18)) * DtoE(line,38,4); // SV health
-		V[27] = stod(line.substr(41,18)); // TGD [sec]
-		V[28] = stod(line.substr(60,18)); // IODC
+		V[25] = stod(line.substr(3 ,15)) * DtoE(line,19,3); // SV accuracy
+		V[26] = stod(line.substr(22,15)) * DtoE(line,38,3); // SV health
+		V[27] = stod(line.substr(41,15)) * DtoE(line,57,3); // TGD [sec]
+		V[28] = stod(line.substr(60,15)) * DtoE(line,76,3); // IODC
 
 		// line 8
 		std::getline(input_file, line);
 
-		V[29] = stod(line.substr(3 ,18)); // transmission time of message
-		V[30] = stod(line.substr(22,18));
+		V[29] = stod(line.substr(3 ,15)) * DtoE(line,19,3); // transmission time of message
+		V[30] = stod(line.substr(22,15)) * DtoE(line,38,3);
 		//V[31] = stod(line.substr(41,18));
 		//V[32] = stod(line.substr(60,18));
 
