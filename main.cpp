@@ -16,6 +16,8 @@ int main(void){
 
 	// User Position Initiation
 	Gps.UserPos << -3042060, 4111978, 3797578, 1;
+	
+	// True: -3042060.939 , 4111978.505 , 3797578.579 (ITRF2014)
 
 	Gps.setSite(site);
 	Gps.setDOY(doy);

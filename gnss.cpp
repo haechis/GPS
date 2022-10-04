@@ -122,7 +122,7 @@ void GNSS_f::ReadEph(){
     while (std::getline(input_file, line)){
         double V[31];
         int prn_n = std::stoi(line.substr(0,2));
-		std::cout.precision(12);
+		// std::cout.precision(12);
         V[0] = prn_n;
 		V[1] = std::stod(line.substr(12, 2)) * 3600 + std::stod(line.substr(15, 2)) * 60 + std::stod(line.substr(18, 2)); // 
 		V[2] = stod(line.substr(22,15)) * DtoE(line,38,3); // a [sec]
@@ -137,10 +137,7 @@ void GNSS_f::ReadEph(){
 		V[6] = stod(line.substr(22,15)) * DtoE(line,38,3); // Crs [meters]
 		V[7] = stod(line.substr(41,15)) * DtoE(line,57,3); // dn [rad/sec]
 		V[8] = stod(line.substr(60,15)) * DtoE(line,76,3); // M0 [rad]
-		std::cout << V[5] << std::endl;
-		std::cout << V[6] << std::endl;
-		std::cout << V[7] << std::endl;
-		std::cout << V[8] << std::endl;
+		
 
 		// line 3
 		std::getline(input_file, line);
@@ -148,11 +145,7 @@ void GNSS_f::ReadEph(){
 		V[9] =  stod(line.substr(3 ,15)) * DtoE(line,19,3); // C uc [rad]
 		V[10] = stod(line.substr(22,15)) * DtoE(line,38,3); // eccentricity
 		V[11] = stod(line.substr(41,15)) * DtoE(line,57,3); //C us [rad]
-		//V[12] = str2double(line, 60, 78); //square root A [sqrt(m)]
-		//std::cout << V[12] << std::endl;
-		//printf("1. %f\n", V[12]);
-		V[12] = stod(line.substr(60,15)) * DtoE(line,76,3);
-		//printf("1. %15.12f\n", V[12]);
+		V[12] = stod(line.substr(60,15)) * DtoE(line,76,3); 
 
 		// line 4
 		std::getline(input_file, line);
@@ -583,7 +576,7 @@ double GNSS_f::Relative_BRDC(){
 	double n_0 = sqrt(gps_mu / pow(A,3));
 
 	double n = n_0 + now_eph.dn;
-	double M_k = now_eph.M_0 + n * (GPS_week_sec - now_obs_meas/gps_SoL - now_eph.t_oe);
+	double M_k = now_eph.M_0 + n * (GPS_week_sec - now_obs_meas/gps_SoL);
 	double E_k = EccentricityAnomaly(M_k);
 	double T_rel = F * now_eph.e * now_eph.sqrt_A * sin(E_k);
 
@@ -798,9 +791,6 @@ void GNSS_f::Positioning(){
 		// 2. Find L1 measurements of the satellite observed at GPS_week_sec
 		// 3. and FInd Satellite's position
 		gps_L1();
-
-		
-
 
 		// 4. Find Receiver's position using Least Square Estimation
 		//  4.x. consider GNSS errors.
