@@ -5,14 +5,21 @@
 
 int main(void){
 	
+	
 
-
+	
 
 	// GNSS target Site and DOY
 	std::string site = "SEOS";
 	std::string doy = "032";
 	
 	GNSS_f Gps;
+
+	// Unit Test
+	double t = 172800;
+	int weeke = 2195;
+	double k = Gps.time2gpst(2022,2,1,0,0, 0);
+	printf("Unit Test, time to gpst %f \n",k);
 
 	// User Position Initiation
 	Gps.UserPos << -3042060, 4111978, 3797578, 1;

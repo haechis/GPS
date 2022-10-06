@@ -9,7 +9,8 @@
 
 #include <eigen3/Eigen/Dense>
 
-
+// Reference: RTKLIB
+//           - Solving GPSTime 
 
 class GNSS_f
 {
@@ -24,6 +25,12 @@ public:
 	double gps_Omega_dot_e = 7.2921151467e-5;
 	double gps_mu = 3.986005e14; //
 	double gps_SoL = 299792458;
+
+	// Time.
+	double gpst0[6]={1980,1, 6,0,0,0}; /* gps time reference */
+	double epoch2time(int YY, int MM, int DD, int HH, int Min, double Sec);
+	// double time2gpst(int YY, int MM, int DD, int HH, int Min, double t, int *week);
+	double time2gpst(int YY, int MM, int DD, int HH, int Min, double t);
 
     // File variation
     std::string File_obs;
@@ -52,7 +59,7 @@ public:
 	void ReadObs_Header_Meas();
 	void ReadObs(std::string fp);
 	
-	double Find_t_oe(double t);
+	double Find_DS(double t);
     struct eph {
 		char GNSS_type; // G R E C J ...
 
@@ -106,9 +113,9 @@ public:
 	std::vector<std::string> num_sigs;
 
 	struct Obs {
-		double yy, mm, dd;
+		int yy, mm, dd, hour, min;
 
-		double hour, min, sec;
+		double sec;
 	
 		std::string gnss_type; // GRECJ ..
 		int prn, pn;
@@ -120,12 +127,12 @@ public:
 		std::vector<std::string> signal_type;
 
 		Obs() {
-			double yy = 0;
-			double mm = 0;
-			double dd = 0;
+			int yy = 0;
+			int mm = 0;
+			int dd = 0;
 
-			double hour = 0;
-			double min = 0;
+			int hour = 0;
+			int min = 0;
 			double sec = 0;
 
 			std::string gnss_type = ""; // GRECJ ..

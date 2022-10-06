@@ -104,8 +104,41 @@ void GNSS_f::ReadAlBe(double * al, double * be){
 
 }
 
-double GNSS_f::Find_t_oe(double t){
+double GNSS_f::Find_DS(double t){
 	return fmod(t, 86400);
+}
+
+double GNSS_f::epoch2time(int YY, int MM, int DD, int HH, int Min, double Sec){
+	double time = 0;
+
+	const int doy[]={1,32,60,91,121,152,182,213,244,274,305,335};
+
+	if (YY<1970||2099<YY||MM<1||12<MM) return time;
+
+	// Leap Year.
+	int days = (YY-1970) * 365 + (YY-1969) / 4 + doy[MM-1] + DD - 2 + (YY%4 == 0 && MM >= 3?1:0);
+	
+	int sec = (int)(Sec);
+	
+	time = days*86400 + HH*3600 + Min * 60 + sec;
+	printf("\n\n <test> days: %d, sec: %d\n",days,sec);
+	return time;
+}
+
+double GNSS_f::time2gpst(int YY, int MM, int DD, int HH, int Min, double t){
+	double gpst;
+
+	double t0 = epoch2time(gpst0[0],gpst0[1], gpst0[2], gpst0[3], gpst0[4], gpst0[5]);
+	double t1 = epoch2time(YY,MM,DD,HH,Min,t);
+	double sec = t1 - t0;
+	int w = (int)(sec/(86400*7));
+
+	// if (week) *week = w;
+	double sec_last = t - (int)(t);
+	gpst = (double)(sec-w*86400*7) - sec_last;
+
+	printf("\n\n<Test> t0: %f, gpst: %f , week : %d \n",t0, gpst, w);
+	return gpst;
 }
 
 double GNSS_f::DtoE(std::string s, int a, int b){
@@ -150,7 +183,8 @@ void GNSS_f::ReadEph(){
 		// line 4
 		std::getline(input_file, line);
 
-		V[13] = Find_t_oe(stod(line.substr(3,15)) * DtoE(line,19,3)); // Toe [sec of GPS week]
+		// V[13] = Find_t_oe(stod(line.substr(3,15)) * DtoE(line,19,3)); // Toe [sec of GPS week]
+		V[13] = stod(line.substr(3 ,15)) * DtoE(line,19,3);
 		V[14] = stod(line.substr(22,15)) * DtoE(line,38,3); // C ic [rad]
 		V[15] = stod(line.substr(41,15)) * DtoE(line,57,3); // Omega 0 [rad]
 		V[16] = stod(line.substr(60,15)) * DtoE(line,76,3); // C is [rad]
@@ -335,13 +369,15 @@ int first_epoch = 0;
 
 		// Obs ttemp;
 		Obs * ttemp = new Obs;
-		ttemp -> yy = str2double2(line, 1, 2); 
-		ttemp ->mm = str2double2(line, 4, 5);
-		ttemp ->dd = str2double2(line, 7, 8);
+		ttemp -> yy = (int)(str2double2(line, 1, 2))+2000; 
+		ttemp ->mm = (int)(str2double2(line, 4, 5));
+		ttemp ->dd = (int)(str2double2(line, 7, 8));
 
-		ttemp ->hour = str2double2(line, 10, 11);
-		ttemp ->min = str2double2(line, 13, 14);
+		ttemp ->hour = (int)(str2double2(line, 10, 11));
+		ttemp ->min = (int)(str2double2(line, 13, 14));
 		ttemp ->sec = str2double2(line, 16, 24);
+
+		// printf("yy: %d, m: %d, d: %d, h: %d, min: %d, sec: %f\n",ttemp ->yy,ttemp ->mm,ttemp ->dd,ttemp ->hour,ttemp ->min,ttemp ->sec);
 
 		ttemp ->prn = str2int(line, 30, 31);
 		//ttemp.sec = str2double2(line, 4, 5);
@@ -554,7 +590,8 @@ void GNSS_f::ReadObs(std::string fp){
 
 void GNSS_f::Find_GPS_week_sec(){
 	std::cout<<"GPS_week_sec: ";
-	GPS_week_sec = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
+	GPS_week_sec = time2gpst(now_obs.yy, now_obs.mm, now_obs.dd, now_obs.hour, now_obs.min, now_obs.sec);
+	// GPS_week_sec = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
 	
 	std::cout<<GPS_week_sec;
 	std::cout<<"\n";
@@ -741,7 +778,11 @@ void GNSS_f::gps_L1(){
 				}
 
 				// time. 현재 시간 이전의 broadcast 값 읽기.
-				if ((ephs[j].t_oe >= GPS_week_sec && ephs[j].t_oe <= GPS_week_sec + 7200) && (ephs[j].prn == now_obs.PRN_s[i]))
+				std::cout<<ephs[j].t_oe;// ephs[j].t_oe; //Find_DS(GPS_week_sec);
+				std::cout<<"\n";
+				std::cout<<(GPS_week_sec);
+				std::cout<<"\n\n";
+				if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs.PRN_s[i]))
 				{
 					// printf("prn: %2d, Toe: %6.3f, GS: %6.3f \n", ephs[j].prn, ephs[j].t_oe, GPS_week_sec); 
 					now_eph = ephs[j];
