@@ -613,7 +613,7 @@ double GNSS_f::Relative_BRDC(){
 	double n_0 = sqrt(gps_mu / pow(A,3));
 
 	double n = n_0 + now_eph.dn;
-	double M_k = now_eph.M_0 + n * (GPS_week_sec - now_obs_meas/gps_SoL);
+	double M_k = now_eph.M_0 + n * (GPS_week_sec - now_eph.t_oe);
 	double E_k = EccentricityAnomaly(M_k);
 	double T_rel = F * now_eph.e * now_eph.sqrt_A * sin(E_k);
 
@@ -664,13 +664,14 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	xyz.z = z_k;
 	
 	double T_rel = -4.442807633e-10 *  now_eph.e * now_eph.sqrt_A * sin(E_k);
-	// Relative_BRDC();
+	 //T_rel = 0;
+	// double T_rel =  Relative_BRDC();
 	
-	xyz.dt_sat = now_eph.a + now_eph.b * (GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe) + now_eph.c * pow((GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe),2) + T_rel - now_eph.t_gd;
+	xyz.dt_sat = now_eph.a + now_eph.b * (T_k) + now_eph.c * pow(T_k,2) + T_rel - now_eph.t_gd;
 
 	
 	// Sat_Pos.push_back(Sat_Pos_temp);
-	printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f \n", now_eph.prn, x_k_r, y_k_r, z_k);
+	printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f, T_rel: %7.3f, TGD: %7.3f \n", now_eph.prn, x_k_r, y_k_r, z_k, T_rel* gps_SoL, now_eph.t_gd* gps_SoL);
 	return xyz;
 	
 
@@ -688,21 +689,30 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 	Eigen::Vector3d LoS_vec, now_UserPos;
 	
 		 
-	now_UserPos[0] = UserPos[0];
-	now_UserPos[1] = UserPos[1];
-	now_UserPos[2] = UserPos[2];
+	//now_UserPos[0] = UserPos[0];
+	//now_UserPos[1] = UserPos[1];
+	//now_UserPos[2] = UserPos[2];
 	
 	// state vector: [now_UserPos, cdtr]';
 
 	double LoS;
 
 	double Computed, y;
-	double cdtr = UserPos[3];
+	//double cdtr = UserPos[3];
+	double cdtr;
 	int PRN_used;
 	for (int k = 0; k < 5; k++){
 		// H_tp_H << 0,0,0,0; 
 		H_tp_H.setZero();
 		H_tp_y.setZero();
+				 
+		if (k == 0){
+			now_UserPos[0] = UserPos[0];
+			now_UserPos[1] = UserPos[1];
+			now_UserPos[2] = UserPos[2];
+			cdtr = UserPos[3];
+		}
+
 		PRN_used = 0;
 
 		for (int i = 0; i < Sat_Pos_values.size();i++){
