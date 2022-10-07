@@ -628,7 +628,7 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	// printf("GS: %6.3f, T_oe: %6.3f \n", GPS_week_sec, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
-
+ 
 	double n = n_0 + now_eph.dn;
 	double M_k = now_eph.M_0 + n * T_k;
 	double E_k = EccentricityAnomaly(M_k);
@@ -646,7 +646,7 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	double x_k_ = r_k * cos(u_k);
 	double y_k_ = r_k * sin(u_k);
 
-	double Omega_k = now_eph.Omega_0 + T_k * (now_eph.Omega_dot - gps_Omega_dot_e) - (gps_Omega_dot_e - now_eph.t_oe);
+	double Omega_k = now_eph.Omega_0 + T_k * (now_eph.Omega_dot - gps_Omega_dot_e) - (gps_Omega_dot_e * now_eph.t_oe);
 
 	double x_k = x_k_ * cos(Omega_k) - y_k_ * cos(i_k) * sin(Omega_k);
 	double y_k = x_k_ * sin(Omega_k) + y_k_ * cos(i_k) * cos(Omega_k);
@@ -761,7 +761,7 @@ void GNSS_f::gps_L1(){
 	std::string tmp;
 	std::cout<<"<GPS L1> \n";
 
-	std::vector<Sat_Pos_temp> Sat_Pos_values; // 초기화 했는데 크기가 24로 되어있음..;
+	std::vector<Sat_Pos_temp> Sat_Pos_values; // 초기화 했는데 크기가 24로 되어있음..; (해결)
 	
 		
 	int vec_size = 0;
@@ -788,10 +788,10 @@ void GNSS_f::gps_L1(){
 				}
 
 				// time. 현재 시간 이전의 broadcast 값 읽기.
-				std::cout<<ephs[j].t_oe;// ephs[j].t_oe; //Find_DS(GPS_week_sec);
-				std::cout<<"\n";
-				std::cout<<(GPS_week_sec);
-				std::cout<<"\n\n";
+				//std::cout<<ephs[j].t_oe;// ephs[j].t_oe; //Find_DS(GPS_week_sec);
+				//std::cout<<"\n";
+				//std::cout<<(GPS_week_sec);
+				//std::cout<<"\n\n";
 				if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs.PRN_s[i]))
 				{
 					// printf("prn: %2d, Toe: %6.3f, GS: %6.3f \n", ephs[j].prn, ephs[j].t_oe, GPS_week_sec); 
@@ -846,7 +846,7 @@ void GNSS_f::Positioning(){
 		// 4. Find Receiver's position using Least Square Estimation
 		//  4.x. consider GNSS errors.
 		
-		if (k == 2)
+		if (k == 10)
 		{
 			break;
 		}
