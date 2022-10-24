@@ -17,7 +17,7 @@ class GNSS_f
 private:
     std::string Site;
     std::string DOY;
-
+	std::string RefSite;
 public:
 
     GNSS_f();
@@ -40,6 +40,7 @@ public:
     std::string line;
 
     void setSite(std::string Site);
+	void setRefSite(std::string Site);
     void setDOY(std::string DOY);
     
     double str2double(std::string s, int a, int b);
@@ -179,5 +180,13 @@ public:
 	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos); // LS: Least Square estimation
 	
 	Eigen::Vector4d UserPos;
+
+
+	void ReadUserObs(std::string fp);
+	void ReadRefObs(std::string fp);
+	void RTK();
+	std::vector<Obs> UserObs;
+	std::vector<Obs> RefObs;
+
 };
 

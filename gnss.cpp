@@ -6,6 +6,9 @@ void GNSS_f::setSite(std::string Site){
     // Set Site name
     this-> Site = Site;
 }
+void GNSS_f::setRefSite(std::string Site){
+	this -> RefSite = Site;
+}
 
 void GNSS_f::setDOY(std::string DOY){
     // Set DOY
@@ -20,7 +23,6 @@ void GNSS_f::setRINEX(){
     printf("<test> File_obs: %s\n",File_obs.c_str()); // c++에서 printf로 string 출력시, .c_str 사용해야 함.
     printf("<test> File_nav: %s\n",File_nav.c_str()); 
 }
-
 
 double GNSS_f::str2double(std::string s, int a, int b) {
     // str2double: MATLAB style.
@@ -325,47 +327,18 @@ void GNSS_f::ReadObs_Header_Meas(){
 	
 int first_epoch = 0;
 	while (!input_file.eof()) {
-		
-		// std::cout << " ";
-		// std::cout << first_epoch<<std::endl;
-			
-		/*
-		if (first_epoch == 2879)
-			std::cout << line;*/
 
 		if (first_epoch == 0) {
 			std::getline(input_file, line);
-			//first_epoch = 1;
 		}
 		//else
 		//	break;
 		if (input_file.peek() == EOF)
 			break;
 
-
 		first_epoch++;
 
-		//if(input_file.eof() == EOF)
-			
-		//if (getline(input_file, line)) {
-
-		//}
-		//else
-		//	break;
-		//if (first_epoch == 3)
-		//	break;
-
-		//std::cout << "new start";
-		//std::cout << "\n";
-		//std::cout<<line;
-		// 해야할 일 str2double 추가 짜기 ( 'E' 없을 때)
-		//observation measurement 읽기.
-
-
-		// std::cout << first_epoch<<std::endl;
 		int num_prn = str2int(line, 29, 30);
-		//std::cout << num_prn;
-		//std::cout << line.size();5
 
 		// Obs ttemp;
 		Obs * ttemp = new Obs;
@@ -377,65 +350,28 @@ int first_epoch = 0;
 		ttemp ->min = (int)(str2double2(line, 13, 14));
 		ttemp ->sec = str2double2(line, 16, 24);
 
-		// printf("yy: %d, m: %d, d: %d, h: %d, min: %d, sec: %f\n",ttemp ->yy,ttemp ->mm,ttemp ->dd,ttemp ->hour,ttemp ->min,ttemp ->sec);
-
 		ttemp ->prn = str2int(line, 30, 31);
-		//ttemp.sec = str2double2(line, 4, 5);
-		//ttemp.sec = str2double2(line, 4, 5);
-		//std::cout << ttemp.prn;
-		//std::cout << ttemp.min;
 
 		int cnt_prn = 0;
-		//std::cout << cnt_prn;
-		// GNSS 읽기,
-		//std::string s;
+
 		std::vector<char> gnss_types; // 
-		//double *prns = new double[num_prn];
+
 		std::vector<int> prns;
 		
 		while (cnt_prn < num_prn) {
 			
 			int line1 = (line.size() - 32) / 3;
-			//std::cout << line1;
 			for (int iter = 0; iter < line1; iter++) {
 				
-				//s[cnt_prn] = line[32 + iter * 3];
 				gnss_types.push_back(line[32 + iter * 3]);
-				//prns[cnt_prn] = str2double2(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2);
-				//std::cout<<"Error: here"<<std::endl;
-				//std::cout<<line<<std::endl;
-				//std::cout<<32 + iter * 3 + 1<<std::endl;
-				//std::cout<<32 + iter * 3 + 2<<std::endl;
-				//std::cout<<stoi(line.substr(32 + iter * 3 + 1,2))<<std::endl;
-				// prns.push_back(str2int(line, 32 + iter * 3 + 1, 32 + iter * 3 + 2));
 				prns.push_back(stoi(line.substr(32 + iter * 3 + 1,2)));
-				
-				//s[cnt_prn] = 
-				//Obss.push_back(ttemp);
+
 				cnt_prn++;
-				//std::cout << ttemp.prn;
 			}
-			//break;
-			//gnss_type_tmp = lin
+
 			std::getline(input_file, line);
 		}
-		//std::cout << prns.size();
 
-		//for (int iter = 0; iter < num_prn; iter++) {
-			// empty인지 확인
-			//아니면 세 개 일고, type / prn number  읽음
-			//
-
-		//}
-		//delete prns;
-
-		///////////////////////
-		//이제 measuremnet를 읽을 차례!
-			//?/////////////////
-		//std::cout << "sig 개수"; 10
-		//std::cout << num_sigs.size();
-		//std::cout << line;
-		
 		double meas_temp;
 		int cnt_sig = 0;
 		int cnt = 0;
@@ -443,30 +379,18 @@ int first_epoch = 0;
 		int iter;
 		int push_number = 0;
 		for (iter = 0; iter < prns.size() ; iter++) {
-			//std::cout << " Line Jump ";
-			//std::cout << prns.size() * (num_sigs.size() / 5 + 1) - 1;
-			//std::cout << "iter";
-			//std::cout << iter;
+
 			for (int j_line = 0; j_line < jump_line; j_line++) {
-				//std::cout << "\n";
 
 				if (j_line == (jump_line-1) ) { // 마지막 줄
-					// num_sigs[cnt_sig]; // 해당 signal
 					
 					for (int kk = 0; kk < num_sigs.size() - (jump_line-1)*5; kk++) {
-					//	std::cout << "DLFKHJSDLKFJDSL";
 						if (line.size() < 16 * kk + 1) continue;
-						// if (line.substr(16 * kk + 1, 13) == "            ") continue;
 						std::string line_tmp = line.substr(16*kk+1,12);
 						if (line_tmp.compare("            ") == 0) continue;
 						if (line_tmp.size() == 0) continue;
-						
-						// std::cout<<line<<std::endl;
-						//std::cout<<16*kk+1<<std::endl;
-						// std::cout<<line.substr(16*kk+1,13)<<std::endl;
 						meas_temp = str2double2(line, 16 * kk + 1,13);
-						//std::cout << "\n";
-						//std::cout << meas_temp;
+
 						ttemp ->PRN_s.push_back(prns[iter]);
 						ttemp ->MEAS_s.push_back(meas_temp);
 						ttemp ->PRN_types.push_back(gnss_types[iter]);
@@ -477,41 +401,17 @@ int first_epoch = 0;
 				}
 				else {
 					for (int kk = 0; kk < 5; kk ++ ) {
-						
-						//std::cout << kk;
-						
-						
-						// std::stod(s.substr(a, b - a + 1))
+
 						if (line.size() < 16 * kk + 1) {
-							//std::cout << "E1\n";
 							continue;
 						}
-						
 
-						
-						// if(line.substr(16*kk+1,12) == "            ") continue;
-						
 						std::string line_tmp = line.substr(16*kk+1,12);
 						
 						if (line_tmp.compare("            ") == 0) continue;
 						if (line_tmp.size() == 0) continue;
-						// std::cout<<"E3"<<std::endl;
-						// std::cout<<line.size()<<std::endl;
-						// std::cout<<line_tmp.size()<<std::endl;
-						
-						//if (std::stod(line.substr(15 * kk + 2, 15 * kk + 13)) == 0) continue;
-						//std::cout << "\n";
-						//std::cout << kk;
-						//std::cout << ":  ";
-						//std::cout << line.substr(16 * kk + 1, 13);
-						// std::cout<<line.substr(16*kk+1,13)<<std::endl;
-						//std::cout << "E2\n";
-						
 							
 						meas_temp = str2double2(line, 16 * kk + 1,13);
-						//std::cout << "E3\n";
-						//meas_temp = str2double2(line, 16 * kk + 1, 13);
-						
 
 						ttemp ->PRN_s.push_back(prns[iter]);
 						ttemp ->MEAS_s.push_back(meas_temp);
@@ -520,19 +420,8 @@ int first_epoch = 0;
 						push_number++;
 						cnt++;
 					}
-					// std::cout << "cnt \n";
 				}
 				 
-				/*
-				//^^^^^//  여기서 중단 설정을 걸고, break로 인해 std getline이 먹히는지 안먹히는지 확인을 해보자.
-				if (iter == prns.size()) {
-					std::cout<<"DFJSLDFJLSDFJSLDFJSDLKFJSLDFJSLDKFJSLDKFJDSLKF";
-					//std::getline(input_file, line);
-					break;
-				}
-				else
-				
-				*/
 				if (std::getline(input_file, line)) {}
 				else
 					break;
@@ -549,31 +438,8 @@ int first_epoch = 0;
 		Obss.push_back(*ttemp);
 		
 		delete ttemp;
-		// std::cout << "this line test \n ";
 	}
 	std::cout << "\n End -> Read OBS \n ";
-
-	// test
-	/*
-	std::cout << "Obss size:"<<sizeof(Obss[0]) - 9 - sizeof(Obss[0].gnss_type)<<std::endl;
-	std::cout << "Obss size:"<<Obss[0].pn<<std::endl;
-	for (int i = 0; i < Obss[1].pn - 1; i++){
-		std::cout<<i;
-		std::cout<<"  ";
-		std::cout<<Obss[0].PRN_s[i];
-		std::cout<<"  ";
-		std::cout<<Obss[0].MEAS_s[i];
-		std::cout<<"  ";
-		std::cout<<Obss[0].PRN_types[i];
-		std::cout<<"  ";
-		std::cout<<Obss[0].signal_type[i];
-		std::cout<<"\n";
-	}
-	std::cout<<sizeof(Obss[0].PRN_s);
-	std::cout<<sizeof(Obss[0].MEAS_s);
-	std::cout<<sizeof(Obss[0].PRN_types);
-	std::cout<<sizeof(Obss[0].signal_type);
-	*/
 }
 
 
@@ -589,12 +455,7 @@ void GNSS_f::ReadObs(std::string fp){
 }
 
 void GNSS_f::Find_GPS_week_sec(){
-	std::cout<<"GPS_week_sec: ";
 	GPS_week_sec = time2gpst(now_obs.yy, now_obs.mm, now_obs.dd, now_obs.hour, now_obs.min, now_obs.sec);
-	// GPS_week_sec = now_obs.hour * 3600 + now_obs.min * 60 + now_obs.sec ;
-	
-	std::cout<<GPS_week_sec;
-	std::cout<<"\n";
 }
  
 double GNSS_f::EccentricityAnomaly(double M_k){
@@ -603,7 +464,6 @@ double GNSS_f::EccentricityAnomaly(double M_k){
 	for (int i = 0; i < 5; i ++){
 		E_k = M_k +  now_eph.e * sin(E_k);
 	}
-
 	return E_k;
 }
 
@@ -621,11 +481,9 @@ double GNSS_f::Relative_BRDC(){
 }
 
 GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
-	// use: now_eph / GPS_week_sec
 	
 	double T_k = GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe; // GS - Signal Transmission Time - Toe
 	printf("T_k: %20.18f, GPS_week_sec: %20.18f, STT: %20.18f, toe: %20.18f \n",T_k , GPS_week_sec, now_obs_meas / gps_SoL, now_eph.t_oe);
-	// printf("GS: %6.3f, T_oe: %6.3f \n", GPS_week_sec, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
  
@@ -778,23 +636,14 @@ void GNSS_f::gps_L1(){
 			std::cout<<now_obs.signal_type[i];
 			std::cout<<"\n";
 		
-				
-				
 			// ephemeris에서 필요한 정보를 찾기
 			for (int j = 0; j< ephs.size();j++){
-				// std::cout<<"\n To Do: 내비게이션 파일 첫 데이터가 이전 날짜라서, 시간 +- 3600 내의 데이터만 쓰도록!\n ";
-				if (now_obs.PRN_s[i] == 25){ ///////////////////////
-					continue;
+				if (now_obs.PRN_s[i] == 25){ 
+					// continue;
 				}
 
-				// time. 현재 시간 이전의 broadcast 값 읽기.
-				//std::cout<<ephs[j].t_oe;// ephs[j].t_oe; //Find_DS(GPS_week_sec);
-				//std::cout<<"\n";
-				//std::cout<<(GPS_week_sec);
-				//std::cout<<"\n\n";
 				if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs.PRN_s[i]))
 				{
-					// printf("prn: %2d, Toe: %6.3f, GS: %6.3f \n", ephs[j].prn, ephs[j].t_oe, GPS_week_sec); 
 					now_eph = ephs[j];
 					now_obs_meas = now_obs.MEAS_s[i];
 					Sat_Pos_temp xyz = SatPos();
@@ -811,17 +660,6 @@ void GNSS_f::gps_L1(){
 			}
 		}
 
-	}
-	// std::vector<Sat_Pos_temp> slice;
-	// slice.assign(Sat_Pos_values.begin() + 1, Sat_Pos_values.begin() + vec_size);	
-	// (Sat_Pos_values.begin() , Sat_Pos_values.begin() + vec_size - 1);
-	// printf("22 sat크기 : %lu vec size 크기: %d \n", Sat_Pos_values.size(), vec_size);
-	
-	// 여기서 값을 확인해보자.
-	// 오차 고려하여 Least Squared Estimation으로 사용자 좌표 구하기.
-	// 
-	for (int q = 0; q<sizeof(Sat_Pos_values); q++){
-		//     printf("#: %d, prn: %d, obs: %6.3f \n", q, Sat_Pos_values[q].prn, Sat_Pos_values[q].obs);
 	}
 
 	PosEstimation_LS(Sat_Pos_values);
@@ -854,4 +692,35 @@ void GNSS_f::Positioning(){
 	}
 
 	// 5. Output: Statistical Results
+	printf("%ld adsfk\n",Obss.size());
+	Obss.clear();
+	printf("%ld\n",Obss.size());
+}
+
+void GNSS_f::ReadUserObs(std::string fp){
+	// input file.
+	std::vector<Obs> Obss;
+	ReadFile(fp);
+	ReadObs_Header_Type();
+	ReadObs_Header_Meas();
+	CloseFile();
+	UserObs = Obss;
+	// delete &Obss;
+	Obss.clear();
+	printf("%d , %6.3f \n", UserObs[0].prn, UserObs[0].meas);
+}
+void GNSS_f::ReadRefObs(std::string fp){
+	// input file.
+	std::vector<Obs> Obss;
+	ReadFile(fp);
+	ReadObs_Header_Type();
+	ReadObs_Header_Meas();
+	CloseFile();
+	RefObs = Obss;
+	Obss.clear();
+}
+void GNSS_f::RTK(){
+	// User Station: UserObs, Ref Station: RefObs
+	printf("%d , %6.3f \n", UserObs[0].prn, UserObs[0].meas);
+	printf("%d , %6.3f \n", RefObs[0].prn, RefObs[0].meas);
 }

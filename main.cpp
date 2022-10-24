@@ -16,10 +16,10 @@ int main(void){
 	GNSS_f Gps;
 
 	// Unit Test
-	double t = 172800;
-	int weeke = 2195;
-	double k = Gps.time2gpst(2022,2,1,0,0, 0);
-	printf("Unit Test, time to gpst %f \n",k);
+	//double t = 172800;
+	//int weeke = 2195;
+	//double k = Gps.time2gpst(2022,2,1,0,0, 0);
+	//printf("Unit Test, time to gpst %f \n",k);
 
 	// User Position Initiation
 	Gps.UserPos << -3042060, 4111978, 3797578, 1;
@@ -29,7 +29,7 @@ int main(void){
 	Gps.setSite(site);
 	Gps.setDOY(doy);
 
-	Gps.setRINEX();	
+	Gps.setRINEX();
 
 	// create file name to read RINEX navigation file.
     std::string filename(Gps.File_nav);
@@ -49,7 +49,12 @@ int main(void){
 	// Positioning as much as the number of Obss
 	Gps.Positioning();
 
-	 
+	// RTK
+	std::string RefSite = "DANJ";
+	Gps.ReadUserObs(filename2);
+	Gps.ReadRefObs(filename2);
+	
+	Gps.RTK();
 
 
 	return 0;
