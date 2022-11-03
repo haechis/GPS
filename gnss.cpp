@@ -327,7 +327,7 @@ void GNSS_f::ReadObs_Header_Meas(){
 	
 int first_epoch = 0;
 	while (!input_file.eof()) {
-
+		
 		if (first_epoch == 0) {
 			std::getline(input_file, line);
 		}
@@ -337,11 +337,12 @@ int first_epoch = 0;
 			break;
 
 		first_epoch++;
-
+		
 		int num_prn = str2int(line, 29, 30);
 
 		// Obs ttemp;
 		Obs * ttemp = new Obs;
+		
 		ttemp -> yy = (int)(str2double2(line, 1, 2))+2000; 
 		ttemp ->mm = (int)(str2double2(line, 4, 5));
 		ttemp ->dd = (int)(str2double2(line, 7, 8));
@@ -378,6 +379,7 @@ int first_epoch = 0;
 		int jump_line = num_sigs.size() / 5 + 1;
 		int iter;
 		int push_number = 0;
+		
 		for (iter = 0; iter < prns.size() ; iter++) {
 
 			for (int j_line = 0; j_line < jump_line; j_line++) {
@@ -401,7 +403,7 @@ int first_epoch = 0;
 				}
 				else {
 					for (int kk = 0; kk < 5; kk ++ ) {
-
+						
 						if (line.size() < 16 * kk + 1) {
 							continue;
 						}
@@ -435,9 +437,12 @@ int first_epoch = 0;
 		} //for iter
 		
 		ttemp->pn = push_number;
+		
 		Obss.push_back(*ttemp);
 		
+		
 		delete ttemp;
+		
 	}
 	std::cout << "\n End -> Read OBS \n ";
 }
@@ -699,19 +704,22 @@ void GNSS_f::Positioning(){
 
 void GNSS_f::ReadUserObs(std::string fp){
 	// input file.
-	std::vector<Obs> Obss;
+	//std::vector<Obs> Obss;
 	ReadFile(fp);
 	ReadObs_Header_Type();
 	ReadObs_Header_Meas();
 	CloseFile();
+	printf("test1\n");
 	UserObs = Obss;
+	printf("test2\n");	
 	// delete &Obss;
 	Obss.clear();
+	num_sigs.clear();
 	printf("%d , %6.3f \n", UserObs[0].prn, UserObs[0].meas);
 }
 void GNSS_f::ReadRefObs(std::string fp){
 	// input file.
-	std::vector<Obs> Obss;
+	//std::vector<Obs> Obss;
 	ReadFile(fp);
 	ReadObs_Header_Type();
 	ReadObs_Header_Meas();

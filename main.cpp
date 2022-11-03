@@ -39,15 +39,15 @@ int main(void){
 	
 	// create file namte to read RINEX Observation file.
 	std::string filename2(Gps.File_obs);
-	Gps.ReadObs(filename2);
+	// Gps.ReadObs(filename2);
 	
 
 	// Positioning.
 	// ...
-	std::cout<<Gps.Obss.size()<<std::endl;
+	// std::cout<<Gps.Obss.size()<<std::endl;
 	
 	// Positioning as much as the number of Obss
-	Gps.Positioning();
+	// Gps.Positioning();
 
 	// RTK
 	std::string RefSite = "DANJ";
@@ -55,7 +55,11 @@ int main(void){
 	Gps.ReadRefObs(filename2);
 	
 	Gps.RTK();
-
+	
+	std::vector<int> A = {1,2,3};
+	printf("Size of A: %ld \n", A.size());
+	A.clear();
+	printf("Size of A: %ld \n", A.size());
 
 	return 0;
 
