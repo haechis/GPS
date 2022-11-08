@@ -24,6 +24,15 @@ void GNSS_f::setRINEX(){
     printf("<test> File_nav: %s\n",File_nav.c_str()); 
 }
 
+void GNSS_f::setRINEX_ref(){
+    // create file name.
+    File_obs_ref = this-> RefSite + this-> DOY + "0.22o";
+    File_nav_ref = this -> RefSite + this -> DOY + "0.22n";
+    // - test -
+     printf("<test> File_obs: %s\n",File_obs_ref.c_str()); // c++에서 printf로 string 출력시, .c_str 사용해야 함.
+     printf("<test> File_nav: %s\n",File_nav_ref.c_str()); 
+}
+
 double GNSS_f::str2double(std::string s, int a, int b) {
     // str2double: MATLAB style.
 	//int c = b - 3;
@@ -123,7 +132,7 @@ double GNSS_f::epoch2time(int YY, int MM, int DD, int HH, int Min, double Sec){
 	int sec = (int)(Sec);
 	
 	time = days*86400 + HH*3600 + Min * 60 + sec;
-	printf("\n\n <test> days: %d, sec: %d\n",days,sec);
+	// printf("\n\n <test> days: %d, sec: %d\n",days,sec);
 	return time;
 }
 
@@ -139,7 +148,7 @@ double GNSS_f::time2gpst(int YY, int MM, int DD, int HH, int Min, double t){
 	double sec_last = t - (int)(t);
 	gpst = (double)(sec-w*86400*7) - sec_last;
 
-	printf("\n\n<Test> t0: %f, gpst: %f , week : %d \n",t0, gpst, w);
+	// printf("\n\n<Test> t0: %f, gpst: %f , week : %d \n",t0, gpst, w);
 	return gpst;
 }
 
@@ -488,7 +497,7 @@ double GNSS_f::Relative_BRDC(){
 GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 	
 	double T_k = GPS_week_sec - now_obs_meas / gps_SoL - now_eph.t_oe; // GS - Signal Transmission Time - Toe
-	printf("T_k: %20.18f, GPS_week_sec: %20.18f, STT: %20.18f, toe: %20.18f \n",T_k , GPS_week_sec, now_obs_meas / gps_SoL, now_eph.t_oe);
+	// printf("T_k: %20.18f, GPS_week_sec: %20.18f, STT: %20.18f, toe: %20.18f \n",T_k , GPS_week_sec, now_obs_meas / gps_SoL, now_eph.t_oe);
 	double A = pow(now_eph.sqrt_A,2);
 	double n_0 = sqrt(gps_mu / pow(A,3));
  
@@ -534,7 +543,7 @@ GNSS_f::Sat_Pos_temp GNSS_f::SatPos(){
 
 	
 	// Sat_Pos.push_back(Sat_Pos_temp);
-	printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f, T_rel: %7.3f, TGD: %7.3f \n", now_eph.prn, x_k_r, y_k_r, z_k, T_rel* gps_SoL, now_eph.t_gd* gps_SoL);
+	// printf("PRN: %2d, X: %7.3f, Y: %7.3f, Z: %7.3f, T_rel: %7.3f, TGD: %7.3f \n", now_eph.prn, x_k_r, y_k_r, z_k, T_rel* gps_SoL, now_eph.t_gd* gps_SoL);
 	return xyz;
 	
 
@@ -589,7 +598,7 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 
 			y = Sat_Pos_values[i].obs - Computed;
 		
-			printf("prn: %d, obs: %6.3f, LoS: %6.3f, cdtr: %6.3f, dt_sat: %6.3f, Computed: %6.3f y: %6.3f \n", Sat_Pos_values[i].prn,Sat_Pos_values[i].obs, LoS, cdtr, gps_SoL * Sat_Pos_values[i].dt_sat, Computed, y);
+			// printf("prn: %d, obs: %6.3f, LoS: %6.3f, cdtr: %6.3f, dt_sat: %6.3f, Computed: %6.3f y: %6.3f \n", Sat_Pos_values[i].prn,Sat_Pos_values[i].obs, LoS, cdtr, gps_SoL * Sat_Pos_values[i].dt_sat, Computed, y);
 
 			H << -LoS_vec[0]/LoS, -LoS_vec[1]/LoS, -LoS_vec[2]/LoS, 1;
 		
@@ -601,14 +610,14 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 		}
 	
 		xHat = H_tp_H.inverse() * H_tp_y;
-		printf("XHat: %6.3f, YHat: %6.3f, ZHat: %6.3f \n", xHat[0], xHat[1], xHat[2]);
+		// printf("XHat: %6.3f, YHat: %6.3f, ZHat: %6.3f \n", xHat[0], xHat[1], xHat[2]);
 	
 		now_UserPos[0] +=  xHat[0];
 		now_UserPos[1] +=  xHat[1];
 		now_UserPos[2] +=  xHat[2];
 		cdtr += xHat[3];
 		if (xHat.norm() < 1e-5){
-			printf("Converged!\n");
+			// printf("Converged!\n");
 			UserPos[0] = now_UserPos[0];
 			UserPos[1] = now_UserPos[1];
 			UserPos[2] = now_UserPos[2];
@@ -622,7 +631,7 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 
 void GNSS_f::gps_L1(){
 	std::string tmp;
-	std::cout<<"<GPS L1> \n";
+	// std::cout<<"<GPS L1> \n";
 
 	std::vector<Sat_Pos_temp> Sat_Pos_values; // 초기화 했는데 크기가 24로 되어있음..; (해결)
 	
@@ -632,14 +641,14 @@ void GNSS_f::gps_L1(){
 	for (int i = 0; i < now_obs.pn; i++){
 		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="C1")
 		{
-			std::cout<<now_obs.PRN_s[i];
-			std::cout<<"  ";
-			std::cout<<now_obs.MEAS_s[i];
-			std::cout<<"  ";
-			std::cout<<now_obs.PRN_types[i];
-			std::cout<<"  ";
-			std::cout<<now_obs.signal_type[i];
-			std::cout<<"\n";
+			// std::cout<<now_obs.PRN_s[i];
+			// std::cout<<"  ";
+			// std::cout<<now_obs.MEAS_s[i];
+			// std::cout<<"  ";
+			// std::cout<<now_obs.PRN_types[i];
+			// std::cout<<"  ";
+			// std::cout<<now_obs.signal_type[i];
+			// std::cout<<"\n";
 		
 			// ephemeris에서 필요한 정보를 찾기
 			for (int j = 0; j< ephs.size();j++){
@@ -668,7 +677,7 @@ void GNSS_f::gps_L1(){
 	}
 
 	PosEstimation_LS(Sat_Pos_values);
-	printf("X: %6.3f, Y: %6.3f, Z: %6.3f \n", UserPos[0], UserPos[1], UserPos[2]);
+	// printf("X: %6.3f, Y: %6.3f, Z: %6.3f \n", UserPos[0], UserPos[1], UserPos[2]);
 
 }
 
@@ -697,38 +706,44 @@ void GNSS_f::Positioning(){
 	}
 
 	// 5. Output: Statistical Results
-	printf("%ld adsfk\n",Obss.size());
+	// printf("%ld adsfk\n",Obss.size());
 	Obss.clear();
-	printf("%ld\n",Obss.size());
+	// printf("%ld\n",Obss.size());
 }
 
 void GNSS_f::ReadUserObs(std::string fp){
 	// input file.
-	//std::vector<Obs> Obss;
+	Obss.clear();
+	num_sigs.clear();
+
 	ReadFile(fp);
 	ReadObs_Header_Type();
 	ReadObs_Header_Meas();
 	CloseFile();
-	printf("test1\n");
+	// printf("test1\n");
 	UserObs = Obss;
-	printf("test2\n");	
+	// printf("test2\n");	
 	// delete &Obss;
 	Obss.clear();
 	num_sigs.clear();
-	printf("%d , %6.3f \n", UserObs[0].prn, UserObs[0].meas);
 }
 void GNSS_f::ReadRefObs(std::string fp){
 	// input file.
-	//std::vector<Obs> Obss;
+	Obss.clear();
+	num_sigs.clear();
+	
 	ReadFile(fp);
 	ReadObs_Header_Type();
 	ReadObs_Header_Meas();
 	CloseFile();
 	RefObs = Obss;
-	Obss.clear();
-}
+
+	}
 void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
-	printf("%d , %6.3f \n", UserObs[0].prn, UserObs[0].meas);
-	printf("%d , %6.3f \n", RefObs[0].prn, RefObs[0].meas);
+
+	// Obs Check.
+	printf("User: %d , %d, %6.3f \n", UserObs[0].yy, UserObs[0].PRN_s[0], UserObs[0].MEAS_s[0]);
+	printf("Ref: %d , %d, %6.3f \n", RefObs[0].yy, RefObs[0].PRN_s[0], RefObs[0].MEAS_s[0]);
+	
 }

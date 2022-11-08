@@ -5,10 +5,6 @@
 
 int main(void){
 	
-	
-
-	
-
 	// GNSS target Site and DOY
 	std::string site = "SEOS";
 	std::string doy = "032";
@@ -39,7 +35,7 @@ int main(void){
 	
 	// create file namte to read RINEX Observation file.
 	std::string filename2(Gps.File_obs);
-	// Gps.ReadObs(filename2);
+	Gps.ReadObs(filename2);
 	
 
 	// Positioning.
@@ -47,19 +43,21 @@ int main(void){
 	// std::cout<<Gps.Obss.size()<<std::endl;
 	
 	// Positioning as much as the number of Obss
-	// Gps.Positioning();
+	Gps.Positioning();
 
 	// RTK
+	// Reference Station: DANJ
 	std::string RefSite = "DANJ";
+	Gps.setRefSite(RefSite);
+	Gps.setRINEX_ref();
+
+	
+	std::string filename_ref(Gps.File_obs_ref);
 	Gps.ReadUserObs(filename2);
-	Gps.ReadRefObs(filename2);
+	Gps.ReadRefObs(filename_ref);
 	
 	Gps.RTK();
 	
-	std::vector<int> A = {1,2,3};
-	printf("Size of A: %ld \n", A.size());
-	A.clear();
-	printf("Size of A: %ld \n", A.size());
 
 	return 0;
 

@@ -36,11 +36,14 @@ public:
     std::string File_obs;
     std::string File_nav;
 
+	std::string File_obs_ref;
+	std::string File_nav_ref;
+
     std::ifstream input_file;
     std::string line;
 
     void setSite(std::string Site);
-	void setRefSite(std::string Site);
+	void setRefSite(std::string SITE);
     void setDOY(std::string DOY);
     
     double str2double(std::string s, int a, int b);
@@ -53,6 +56,7 @@ public:
 	void CloseFile();
 	double DtoE(std::string s, int a, int b);
     void setRINEX(); // rinex file naming.
+	void setRINEX_ref();
     void ReadEph();
 
 
