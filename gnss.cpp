@@ -63,7 +63,7 @@ void GNSS_f::ReadFile(std::string fp){
         std::cerr << "Could not open the file - ' " << fp << std::endl;
     }
     else{
-        printf("Success to read RINEX navigation file\n");
+        printf("Success reading file: %s \n", fp.c_str());
     }
 
 }
@@ -312,7 +312,7 @@ void GNSS_f::ReadObs_Header_Type(){
 
 	while (std::getline(input_file, line)) {
 		// std::cout<<line<<std::endl;
-		if (line.size() < 74){
+		if (line.size() < 73){
 			continue;
 		}
 
@@ -453,7 +453,8 @@ int first_epoch = 0;
 		delete ttemp;
 		
 	}
-	std::cout << "\n End -> Read OBS \n ";
+	
+	printf("\nEnd -> Read OBS, epoch: %d\n\n",first_epoch);
 }
 
 
@@ -743,7 +744,11 @@ void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
 
 	// Obs Check.
-	printf("User: %d , %d, %6.3f \n", UserObs[0].yy, UserObs[0].PRN_s[0], UserObs[0].MEAS_s[0]);
-	printf("Ref: %d , %d, %6.3f \n", RefObs[0].yy, RefObs[0].PRN_s[0], RefObs[0].MEAS_s[0]);
-	
+	// printf("User: %d , %d, %6.3f \n", UserObs[0].yy, UserObs[0].PRN_s[0], UserObs[0].MEAS_s[0]);
+	// printf("Ref: %d , %d, %6.3f \n", RefObs[0].yy, RefObs[0].PRN_s[0], RefObs[0].MEAS_s[0]);
+	// printf("Ref: %d , %d, %6.3f \n", RefObs[2879].yy, RefObs[2879].PRN_s[0], RefObs[2879].MEAS_s[0]);
 }
+
+// -- <알고리즘 활용>
+// 0. 드래그 주석 : Ctrl + K + C 
+// 1. OBS 길이 체크 : UserObs.size()

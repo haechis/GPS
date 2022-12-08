@@ -45,14 +45,16 @@ int main(void){
 	// Positioning as much as the number of Obss
 	Gps.Positioning();
 
-	// RTK
+	// RTK 
 	// Reference Station: DANJ
 	std::string RefSite = "DANJ";
 	Gps.setRefSite(RefSite);
 	Gps.setRINEX_ref();
 
+  	std::string filename_ref(Gps.File_obs_ref);
 	
-	std::string filename_ref(Gps.File_obs_ref);
+	printf("RTK Start.\n");
+	
 	Gps.ReadUserObs(filename2);
 	Gps.ReadRefObs(filename_ref);
 	
