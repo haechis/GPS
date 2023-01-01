@@ -178,13 +178,18 @@ public:
 	void Find_GPS_week_sec();
 	double Relative_BRDC();
 	
-	void gps_L1();
+	void gps_CA();
 
 	Sat_Pos_temp SatPos(); // Calculate Satellite's Position.
 	void PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos); // LS: Least Square estimation
 	
 	Eigen::Vector4d UserPos;
 
+
+	Obs now_ref_obs;
+	void Find_now_ref_obs();
+
+	void gps_L1(); //  RTK
 
 	void ReadUserObs(std::string fp);
 	void ReadRefObs(std::string fp);

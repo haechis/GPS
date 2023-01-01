@@ -630,7 +630,7 @@ void GNSS_f::PosEstimation_LS(std::vector<Sat_Pos_temp> Sat_Pos_values){
 
 }
 
-void GNSS_f::gps_L1(){
+void GNSS_f::gps_CA(){
 	std::string tmp;
 	// std::cout<<"<GPS L1> \n";
 
@@ -694,7 +694,7 @@ void GNSS_f::Positioning(){
 
 		// 2. Find L1 measurements of the satellite observed at GPS_week_sec
 		// 3. and FInd Satellite's position
-		gps_L1();
+		gps_CA();
 
 		// 4. Find Receiver's position using Least Square Estimation
 		//  4.x. consider GNSS errors.
@@ -739,9 +739,57 @@ void GNSS_f::ReadRefObs(std::string fp){
 	CloseFile();
 	RefObs = Obss;
 
+}
+
+void GNSS_f::Find_now_ref_obs(){
+	int k = 0;
+	double tmp_gpst = 0;
+	int func_flag = 0;
+	for (auto e : RefObs){
+		now_ref_obs = RefObs[k];
+		tmp_gpst = time2gpst(now_ref_obs.yy, now_ref_obs.mm, now_ref_obs.dd, now_ref_obs.hour, now_ref_obs.min, now_ref_obs.sec);
+		if (tmp_gpst == GPS_week_sec){
+			func_flag = 1;
+			break;
+		}
+		k++;
 	}
+
+	if (func_flag == 0)
+		printf("There is no GPST matching between OBSs.");
+
+
+	// TEST. time check -> test ok.
+	//printf("GPST: %f, GPST(REF): %f\n", GPS_week_sec, tmp_gpst);
+}
+
+
+void GNSS_f::gps_CA(){ // RTK.
+}
+
 void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
+	int k = 1;
+	for (auto e : UserObs)
+	{
+		k++;
+
+		now_obs = e;
+		
+		// 1. Find GPS time
+		Find_GPS_week_sec();
+
+		// 2. Find ref obs, time equals to now_obs.
+		Find_now_ref_obs();
+
+
+		gps_L1();
+		if (k == 10)
+		{
+			break;
+		}
+
+	}
 
 	// Obs Check.
 	// printf("User: %d , %d, %6.3f \n", UserObs[0].yy, UserObs[0].PRN_s[0], UserObs[0].MEAS_s[0]);
