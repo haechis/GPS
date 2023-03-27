@@ -728,6 +728,7 @@ void GNSS_f::ReadUserObs(std::string fp){
 	Obss.clear();
 	num_sigs.clear();
 }
+
 void GNSS_f::ReadRefObs(std::string fp){
 	// input file.
 	Obss.clear();
@@ -764,7 +765,35 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
-void GNSS_f::gps_CA(){ // RTK.
+void GNSS_f::gps_L1(){
+	// now_obs
+	// now_ref_obs
+	std::string tmp; // same as gps_CA
+
+	std::vector<Sat_Pos_temp> Sat_Pos_values; // same as gps_CA
+
+	int vec_size = 0; // same as gps_CA
+
+	for (int i = 0; i < now_ref_obs.pn; i++){ // reference station 개수 만큼 iteration
+		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1") // GPS 위성 L1 signal
+		{
+			for (int j = 0; j< ephs.size();j++){
+				if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_ref_obs.PRN_s[i]))
+				{
+
+				}
+
+			} // end for j
+
+		} // end if G, L1
+
+	}	// end for i
+}
+
+std::vector<int> GNSS_f::get_inter_prn(Obs now_obs,Obs now_ref_obs){
+	std::vector<int> Answer;
+
+	return Answer;
 }
 
 void GNSS_f::RTK(){
@@ -782,7 +811,7 @@ void GNSS_f::RTK(){
 		// 2. Find ref obs, time equals to now_obs.
 		Find_now_ref_obs();
 
-
+		std::vector<int> inter_prn = get_inter_prn(now_obs,now_ref_obs);
 		gps_L1();
 		if (k == 10)
 		{

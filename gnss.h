@@ -193,6 +193,9 @@ public:
 
 	void ReadUserObs(std::string fp);
 	void ReadRefObs(std::string fp);
+
+	std::vector<int> get_inter_prn(Obs now_obs,Obs now_ref_obs);
+	
 	void RTK();
 	std::vector<Obs> UserObs;
 	std::vector<Obs> RefObs;
