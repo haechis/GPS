@@ -794,7 +794,7 @@ std::vector<int> GNSS_f::get_inter_prn(Obs now_obs,Obs now_ref_obs){
 	std::vector<int> Answer;
 
 	return Answer;
-}
+} 
 
 void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
