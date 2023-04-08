@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
+#include <algorithm>
 
 
 #include <eigen3/Eigen/Dense>
@@ -195,10 +196,28 @@ public:
 	void ReadRefObs(std::string fp);
 
 	std::vector<int> get_inter_prn(Obs now_obs,Obs now_ref_obs);
+
 	
 	void RTK();
 	std::vector<Obs> UserObs;
 	std::vector<Obs> RefObs;
+
+	// new struct. 
+	// struct RTK_OBS{
+	// 	std::vector<int> PRN_s;
+	// 	std::vector<double> MEAS_s;
+	// 	std::vector<char> PRN_types;
+	// 	std::vector<std::string> signal_type;
+	// };
+	struct RTK_OBS{
+		int PRN_s;
+		double MEAS_s;
+		char PRN_types;
+		std::string signal_type;
+	};
+
+	std::vector<RTK_OBS> REF_OBS;
+	std::vector<RTK_OBS> OnlyGPS(Obs now_obs);
 
 };
 

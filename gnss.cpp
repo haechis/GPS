@@ -792,17 +792,51 @@ void GNSS_f::gps_L1(){
 
 std::vector<int> GNSS_f::get_inter_prn(Obs now_obs,Obs now_ref_obs){
 	std::vector<int> Answer;
+	
+	std::vector<int> now_obs_prn_temp =now_obs.PRN_s;
+	std::vector<int> now_obs_ref_prn_temp =now_ref_obs.PRN_s;
+	
+	// 각 obs 중에서 unique prn 
+	// sort(now_obs_prn_temp.begin(), now_obs_prn_temp.end());
+	now_obs_prn_temp.erase(unique(now_obs_prn_temp.begin(),now_obs_prn_temp.end()), now_obs_prn_temp.end());
+
+	for (const auto& n: now_obs_prn_temp ) 
+	printf("%d \n",n);
 
 	return Answer;
 } 
+
+
+std::vector<GNSS_f::RTK_OBS> GNSS_f::OnlyGPS(GNSS_f::Obs in_val){
+	// signal type L1 이면서 GPS 인 아이들만 추출해 보자. (필요시 새로운 struct 만들자.)
+	
+	GNSS_f::RTK_OBS Temp_Answer;
+	std::vector<GNSS_f::RTK_OBS> Answer;
+	// GNSS_f::Obss temp;
+	for (int i = 0;i<in_val.PRN_types.size();i++){
+		if (in_val.PRN_types[i] == 'G' && in_val.signal_type[i] == "L1")
+		{
+			Temp_Answer.MEAS_s = in_val.MEAS_s[i];
+			Temp_Answer.PRN_types = in_val.PRN_types[i];
+			Temp_Answer.signal_type = in_val.signal_type[i];
+			Temp_Answer.PRN_s = in_val.PRN_s[i];
+
+			Answer.push_back(Temp_Answer);
+		}
+		
+	}
+
+	return Answer;
+}
 
 void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
 	int k = 1;
 	for (auto e : UserObs)
 	{
+		printf("epoch: %d (RTK) \n",k);
 		k++;
-
+		
 		now_obs = e;
 		
 		// 1. Find GPS time
@@ -811,9 +845,22 @@ void GNSS_f::RTK(){
 		// 2. Find ref obs, time equals to now_obs.
 		Find_now_ref_obs();
 
+		// 3. GPS 위성 중 공통 위성만 추출.
+		// 3.1 GPS 위성 중
+		// std::vector<GNSS_f::RTK_OBS> now_obs_g = OnlyGPS(now_obs);
+		std::vector<GNSS_f::RTK_OBS> now_obs_g = OnlyGPS(now_obs);
+		for(auto q : now_obs_g){
+			// test
+			// printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
+		}
+		std::vector<GNSS_f::RTK_OBS> ref_obs_g = OnlyGPS(now_ref_obs);
+		for(auto q : ref_obs_g){
+			// printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
+		}
+		// 3.2 공통 위성만 추출
 		std::vector<int> inter_prn = get_inter_prn(now_obs,now_ref_obs);
 		gps_L1();
-		if (k == 10)
+		if (k == 2)
 		{
 			break;
 		}
