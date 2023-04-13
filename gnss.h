@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 #include <algorithm>
+#include <set>
 
 
 #include <eigen3/Eigen/Dense>
@@ -195,7 +196,7 @@ public:
 	void ReadUserObs(std::string fp);
 	void ReadRefObs(std::string fp);
 
-	std::vector<int> get_inter_prn(Obs now_obs,Obs now_ref_obs);
+	
 
 	
 	void RTK();
@@ -215,7 +216,7 @@ public:
 		char PRN_types;
 		std::string signal_type;
 	};
-
+	std::vector<int> get_inter_prn(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs);
 	std::vector<RTK_OBS> REF_OBS;
 	std::vector<RTK_OBS> OnlyGPS(Obs now_obs);
 

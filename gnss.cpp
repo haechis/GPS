@@ -790,18 +790,33 @@ void GNSS_f::gps_L1(){
 	}	// end for i
 }
 
-std::vector<int> GNSS_f::get_inter_prn(Obs now_obs,Obs now_ref_obs){
+std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
 	std::vector<int> Answer;
 	
-	std::vector<int> now_obs_prn_temp =now_obs.PRN_s;
-	std::vector<int> now_obs_ref_prn_temp =now_ref_obs.PRN_s;
+	std::vector<int> now_obs_g_prn;
+	std::vector<int> now_ref_g_prn;
+	
+	for (auto e: now_obs_g){
+		now_obs_g_prn.push_back(e.PRN_s);
+	}
+	for (auto e: now_ref_g){
+		now_ref_g_prn.push_back(e.PRN_s);
+	}
+	std::set_intersection(now_obs_g_prn.begin(),now_obs_g_prn.end(), now_ref_g_prn.begin(), now_ref_g_prn.end(), std::back_inserter(Answer));
+
+	printf("intersection\n");
+	for (auto e: Answer)
+	printf("%d \n", e);
+
+	//std::vector<int> now_obs_prn_temp =now_obs_g;
+	//std::vector<int> now_obs_ref_prn_temp =now_ref_obs.PRN_s;
 	
 	// 각 obs 중에서 unique prn 
 	// sort(now_obs_prn_temp.begin(), now_obs_prn_temp.end());
-	now_obs_prn_temp.erase(unique(now_obs_prn_temp.begin(),now_obs_prn_temp.end()), now_obs_prn_temp.end());
+	//now_obs_prn_temp.erase(unique(now_obs_prn_temp.begin(),now_obs_prn_temp.end()), now_obs_prn_temp.end());
 
-	for (const auto& n: now_obs_prn_temp ) 
-	printf("%d \n",n);
+	//for (const auto& n: now_obs_prn_temp ) 
+	//printf("%d \n",n);
 
 	return Answer;
 } 
@@ -851,14 +866,14 @@ void GNSS_f::RTK(){
 		std::vector<GNSS_f::RTK_OBS> now_obs_g = OnlyGPS(now_obs);
 		for(auto q : now_obs_g){
 			// test
-			// printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
+			printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
 		}
 		std::vector<GNSS_f::RTK_OBS> ref_obs_g = OnlyGPS(now_ref_obs);
 		for(auto q : ref_obs_g){
 			// printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
 		}
 		// 3.2 공통 위성만 추출
-		std::vector<int> inter_prn = get_inter_prn(now_obs,now_ref_obs);
+		std::vector<int> inter_prn = get_inter_prn(now_obs_g, ref_obs_g);
 		gps_L1();
 		if (k == 2)
 		{
