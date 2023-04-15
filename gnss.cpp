@@ -765,7 +765,7 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
-void GNSS_f::gps_L1(){
+void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
 	// now_obs
 	// now_ref_obs
 	std::string tmp; // same as gps_CA
@@ -774,20 +774,40 @@ void GNSS_f::gps_L1(){
 
 	int vec_size = 0; // same as gps_CA
 
-	for (int i = 0; i < now_ref_obs.pn; i++){ // reference station 개수 만큼 iteration
-		if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1") // GPS 위성 L1 signal
-		{
-			for (int j = 0; j< ephs.size();j++){
-				if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_ref_obs.PRN_s[i]))
-				{
+	for (int i = 0; i < now_obs_g.size(); i ++){
+		for (int j = 0; j < ephs.size(); j++){
+			if ( (ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs_g[i].PRN_s))
+				
+				now_eph = ephs[j];
+				now_obs_meas = now_obs_g[i].MEAS_s;
+				Sat_Pos_temp xyz = SatPos();
+				xyz.prn = now_obs_g[i].PRN_s;
+				xyz.obs = now_obs_g[i].MEAS_s;
+				xyz.sig_type = now_obs_g[i].signal_type;
+				Sat_Pos_values.push_back(xyz);
+				printf("<%d> <%d> prn: %d %f \n",i,j,now_obs_g[i].PRN_s, GPS_week_sec);
+				printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
+				break;
+		}
 
-				}
+	}
 
-			} // end for j
 
-		} // end if G, L1
 
-	}	// end for i
+	// for (int i = 0; i < now_ref_obs.pn; i++){ // reference station 개수 만큼 iteration
+	// 	if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1") // GPS 위성 L1 signal
+	// 	{
+	// 		for (int j = 0; j< ephs.size();j++){
+	// 			if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_ref_obs.PRN_s[i]))
+	// 			{
+
+	// 			}
+
+	// 		} // end for j
+
+	// 	} // end if G, L1
+
+	// }	// end for i
 }
 
 std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
@@ -874,7 +894,9 @@ void GNSS_f::RTK(){
 		}
 		// 3.2 공통 위성만 추출
 		std::vector<int> inter_prn = get_inter_prn(now_obs_g, ref_obs_g);
-		gps_L1();
+
+
+		gps_L1(now_obs_g, ref_obs_g);
 		if (k == 2)
 		{
 			break;

@@ -191,7 +191,7 @@ public:
 	Obs now_ref_obs;
 	void Find_now_ref_obs();
 
-	void gps_L1(); //  RTK
+	
 
 	void ReadUserObs(std::string fp);
 	void ReadRefObs(std::string fp);
@@ -216,6 +216,7 @@ public:
 		char PRN_types;
 		std::string signal_type;
 	};
+	void gps_L1(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs); //  RTK
 	std::vector<int> get_inter_prn(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs);
 	std::vector<RTK_OBS> REF_OBS;
 	std::vector<RTK_OBS> OnlyGPS(Obs now_obs);
