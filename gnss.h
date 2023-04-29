@@ -27,6 +27,7 @@ public:
 	double gps_Omega_dot_e = 7.2921151467e-5;
 	double gps_mu = 3.986005e14; //
 	double gps_SoL = 299792458;
+	double GPS_f1 = 1575.42e6;
 
 	// Time.
 	double gpst0[6]={1980,1, 6,0,0,0}; /* gps time reference */
@@ -213,6 +214,7 @@ public:
 	struct RTK_OBS{
 		int PRN_s;
 		double MEAS_s;
+		double MEAS_pr; // pseudorange meausrement for calculate Sat Pos.
 		char PRN_types;
 		std::string signal_type;
 	};

@@ -668,6 +668,7 @@ void GNSS_f::gps_CA(){
 					Sat_Pos_values.push_back(xyz);
 					
 					vec_size++;
+					
 
 					break;
 				}
@@ -776,11 +777,15 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 
 	for (int i = 0; i < now_obs_g.size(); i ++){
 		for (int j = 0; j < ephs.size(); j++){
-			if ( (ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs_g[i].PRN_s))
-				
+				if ( (ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe < (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs_g[i].PRN_s))
+			
 				now_eph = ephs[j];
-				now_obs_meas = now_obs_g[i].MEAS_s;
+				//now_obs_meas = now_obs_g[i].MEAS_s * (gps_SoL / GPS_f1); // 여기가 carrier phase라서 pseudorange 로 바꿔야 함.
+				now_obs_meas = now_obs_g[i].MEAS_pr;
 				Sat_Pos_temp xyz = SatPos();
+
+				printf("tk: <%f>, gs: %f, meas: %f \n",now_eph.t_oe, GPS_week_sec, now_obs_meas);
+
 				xyz.prn = now_obs_g[i].PRN_s;
 				xyz.obs = now_obs_g[i].MEAS_s;
 				xyz.sig_type = now_obs_g[i].signal_type;
@@ -848,16 +853,29 @@ std::vector<GNSS_f::RTK_OBS> GNSS_f::OnlyGPS(GNSS_f::Obs in_val){
 	GNSS_f::RTK_OBS Temp_Answer;
 	std::vector<GNSS_f::RTK_OBS> Answer;
 	// GNSS_f::Obss temp;
+	int a = 0, b = 0;
 	for (int i = 0;i<in_val.PRN_types.size();i++){
 		if (in_val.PRN_types[i] == 'G' && in_val.signal_type[i] == "L1")
 		{
+			a = 1;
 			Temp_Answer.MEAS_s = in_val.MEAS_s[i];
 			Temp_Answer.PRN_types = in_val.PRN_types[i];
 			Temp_Answer.signal_type = in_val.signal_type[i];
 			Temp_Answer.PRN_s = in_val.PRN_s[i];
-
-			Answer.push_back(Temp_Answer);
+			
 		}
+		if (in_val.PRN_types[i] == 'G' && in_val.signal_type[i] == "C1")
+		{
+			b = 1;
+			Temp_Answer.MEAS_pr = in_val.MEAS_s[i];
+		}
+		if(a == 1 && b == 1)
+		{
+			Answer.push_back(Temp_Answer);
+			a = 0;
+			b = 0;
+		}
+		
 		
 	}
 
