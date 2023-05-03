@@ -771,32 +771,51 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 	// now_ref_obs
 	// std::string tmp; // same as gps_CA
 
-	std::vector<Sat_Pos_temp> Sat_Pos_values; // same as gps_CA
+	std::vector<Sat_Pos_temp> Sat_Pos_values_obs; // same as gps_CA
+	std::vector<Sat_Pos_temp> Sat_Pos_values_ref; 
 
 	int vec_size = 0; // same as gps_CA
 
 	for (int i = 0; i < now_obs_g.size(); i++){
-		for (int j = 0; j < ephs.size(); j++){
-				if ( (ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe < (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs_g[i].PRN_s))
+		for (int j = 0; j < ephs_user.size(); j++){
+				if ( (ephs_user[j].t_oe >= (GPS_week_sec) && ephs_user[j].t_oe < (GPS_week_sec) + 7200) && (ephs_user[j].prn == now_obs_g[i].PRN_s))
 			{
-				now_eph = ephs[j];
+				now_eph = ephs_user[j];
 				//now_obs_meas = now_obs_g[i].MEAS_s * (gps_SoL / GPS_f1); // 여기가 carrier phase라서 pseudorange 로 바꿔야 함.
 				now_obs_meas = now_obs_g[i].MEAS_pr;
 				Sat_Pos_temp xyz = SatPos();
 
-				printf("tk: <%f>, gs: %f, meas: %f \n",now_eph.t_oe, GPS_week_sec, now_obs_meas);
+				// printf("tk: <%f>, gs: %f, meas: %f \n",now_eph.t_oe, GPS_week_sec, now_obs_meas);
 
 				xyz.prn = now_obs_g[i].PRN_s;
 				xyz.obs = now_obs_g[i].MEAS_s;
 				xyz.sig_type = now_obs_g[i].signal_type;
-				Sat_Pos_values.push_back(xyz);
-				printf("<%d> <%d> prn: %d %f \n",i,j,now_obs_g[i].PRN_s, GPS_week_sec);
-				printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
+				Sat_Pos_values_obs.push_back(xyz);
+				// printf("<%d> <%d> prn: %d %f \n",i,j,now_obs_g[i].PRN_s, GPS_week_sec);
+				// printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
 				break;
 		}
 		}
-
 	}
+
+	for (int j = 0;j <ephs_ref.size(); j++){
+		if (ephs_ref[j].t_oe >=GPS_week_sec && ephs_ref[j].t_oe < GPS_week_sec){
+			for (int i = 0; i< now_ref_g.size(); i++){
+				if (ephs_ref[j].prn == now_ref_g[i].PRN_s){
+					now_obs_meas = now_ref_g[i].MEAS_pr;
+					Sat_Pos_temp xyz = SatPos();
+
+					xyz.prn = now_ref_g[i].PRN_s;
+					xyz.obs = now_ref_g[i].MEAS_s;
+					xyz.sig_type = now_ref_g[i].signal_type;
+					Sat_Pos_values_ref.push_back(xyz);
+					break;
+				}
+			}
+		}
+	}
+
+	/* Pos Estimation KF*/
 
 }
 

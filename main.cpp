@@ -57,7 +57,10 @@ int main(void){
 	
 	Gps.ReadUserObs(filename2);
 	Gps.ReadRefObs(filename_ref);
-	
+	// ephs_user = ephs;
+	Gps.ephs_user = Gps.ephs;
+	Gps.ReadNav(Gps.File_nav_ref);
+	Gps.ephs_ref = Gps.ephs;
 	Gps.RTK();
 	
 

@@ -117,6 +117,8 @@ public:
     }; // struct eph.
 
     std::vector<eph> ephs;
+	std::vector<eph> ephs_user; // This is used for RTK
+	std::vector<eph> ephs_ref; // This is used for RTK
 
 	std::vector<std::string> num_sigs;
 
