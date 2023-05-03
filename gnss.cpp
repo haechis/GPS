@@ -769,16 +769,16 @@ void GNSS_f::Find_now_ref_obs(){
 void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
 	// now_obs
 	// now_ref_obs
-	std::string tmp; // same as gps_CA
+	// std::string tmp; // same as gps_CA
 
 	std::vector<Sat_Pos_temp> Sat_Pos_values; // same as gps_CA
 
 	int vec_size = 0; // same as gps_CA
 
-	for (int i = 0; i < now_obs_g.size(); i ++){
+	for (int i = 0; i < now_obs_g.size(); i++){
 		for (int j = 0; j < ephs.size(); j++){
 				if ( (ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe < (GPS_week_sec) + 7200) && (ephs[j].prn == now_obs_g[i].PRN_s))
-			
+			{
 				now_eph = ephs[j];
 				//now_obs_meas = now_obs_g[i].MEAS_s * (gps_SoL / GPS_f1); // 여기가 carrier phase라서 pseudorange 로 바꿔야 함.
 				now_obs_meas = now_obs_g[i].MEAS_pr;
@@ -794,25 +794,10 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 				printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
 				break;
 		}
+		}
 
 	}
 
-
-
-	// for (int i = 0; i < now_ref_obs.pn; i++){ // reference station 개수 만큼 iteration
-	// 	if (now_obs.PRN_types[i] == 'G' && now_obs.signal_type[i] =="L1") // GPS 위성 L1 signal
-	// 	{
-	// 		for (int j = 0; j< ephs.size();j++){
-	// 			if ((ephs[j].t_oe >= (GPS_week_sec) && ephs[j].t_oe <= (GPS_week_sec) + 7200) && (ephs[j].prn == now_ref_obs.PRN_s[i]))
-	// 			{
-
-	// 			}
-
-	// 		} // end for j
-
-	// 	} // end if G, L1
-
-	// }	// end for i
 }
 
 std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
