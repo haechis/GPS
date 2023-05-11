@@ -225,5 +225,14 @@ public:
 	std::vector<RTK_OBS> REF_OBS;
 	std::vector<RTK_OBS> OnlyGPS(Obs now_obs);
 
+	// Extended Kalman Filter
+	Eigen::Matrix3d A_rtk_ekf, P_rtk_ekf, Q_rtk_ekf;
+	void InitRTKPrams();
+	double MAT_IA[32][4];
+
+	
+
+	void PosEstimationKF();
+	std::vector<Vector3d> RTK_Results;
 };
 

@@ -766,6 +766,10 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
+void GNSS_f::PosEstimationKF(){
+	
+}
+
 void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
 	// now_obs
 	// now_ref_obs
@@ -886,9 +890,47 @@ std::vector<GNSS_f::RTK_OBS> GNSS_f::OnlyGPS(GNSS_f::Obs in_val){
 	return Answer;
 }
 
+void GNSS_f::InitRTKPrams(){
+	double P_XYZ = 1e-7;
+	double Q_XYZ = 1e-5;
+	double P_dN = 10000;
+
+	A_rtk_ekf.setZero();
+	P_rtk_ekf.setZero();
+	Q_rtk_ekf.setZero();
+	for (int i = 0;i<3; i++){
+		A_rtk_ekf(i,i) = 1;
+		P_rtk_ekf(i,i) = P_XYZ;
+		Q_rtk_ekf(i,i) = Q_XYZ;
+	}
+	/* Unit test
+	for(int i = 0;i<3;i++){
+		for (int j = 0;j<3;j++)
+			printf("%f ,",Q_rtk_ekf(i,j));
+		printf("\n");
+	}*/
+	
+	for (int i = 0;i<32;i++){
+		MAT_IA[i][0] = i+1;
+		MAT_IA[i][1] = 1;
+		MAT_IA[i][2] = P_dN;
+		MAT_IA[i][3] = 0;
+	}
+	/* Unit test
+	for(int i = 0;i<32;i++){
+		for (int j = 0;j<4;j++){
+			printf("%f ,",MAT_IA[i][j]);
+		}
+		printf("\n");
+	}*/
+}
+
 void GNSS_f::RTK(){
 	// User Station: UserObs, Ref Station: RefObs
 	int k = 1;
+
+	InitRTKPrams();
+
 	for (auto e : UserObs)
 	{
 		printf("epoch: %d (RTK) \n",k);
