@@ -232,7 +232,7 @@ public:
 
 	
 
-	void PosEstimationKF();
-	std::vector<Vector3d> RTK_Results;
+	void PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref);
+	std::vector<Eigen::Vector3d> RTK_Results;
 };
 

@@ -766,8 +766,30 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
-void GNSS_f::PosEstimationKF(){
+void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref){
+	// Pivot은 임시로 PRN25 고정. 
+	int Pivot_PRN = 25;
+
+
+	Eigen::Vector3d LoS_ik, LoS_jk, LoS_il, LoS_jl;
+	Eigen::Vector3d now_UserPos;
+
+	double cdtr, Computed, y;	
+
+	now_UserPos[0] = UserPos[0];
+	now_UserPos[1] = UserPos[1];
+	now_UserPos[2] = UserPos[2];
+	cdtr = UserPos[3];
+	// Sat Position: 
+	// - Sat_Pos_values_obs
+	// - Sat_Pos_values_ref
+	for (int i = 0; i< Sat_Pos_values_ref.size();i++){
+		// GPS Receiver ~ Satellite: rho
+		LoS_ik << Sat_Pos_values_ref[i].x - now_UserPos[0], Sat_Pos_values_ref[i].y - now_UserPos[1], Sat_Pos_values_ref[i].z - now_UserPos[2];
+		printf("N1: %f, N2: %f, LoS_ik: %f\n",now_UserPos[0],UserPos[0],LoS_ik[0]);
+	}
 	
+
 }
 
 void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
@@ -818,9 +840,9 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 			}
 		}
 	}
-
+	printf("N1: %lu, N2: %lu, Asa\n",Sat_Pos_values_ref.size(),Sat_Pos_values_obs.size());
 	/* Pos Estimation KF*/
-
+	PosEstimationKF(Sat_Pos_values_obs,Sat_Pos_values_ref);
 }
 
 std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
