@@ -220,7 +220,7 @@ public:
 		char PRN_types;
 		std::string signal_type;
 	};
-	void gps_L1(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs); //  RTK
+	void gps_L1(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs, std::vector<int> inter_prn); //  RTK
 	std::vector<int> get_inter_prn(std::vector<RTK_OBS>  now_obs,std::vector<RTK_OBS>  now_ref_obs);
 	std::vector<RTK_OBS> REF_OBS;
 	std::vector<RTK_OBS> OnlyGPS(Obs now_obs);
@@ -232,7 +232,7 @@ public:
 
 	
 
-	void PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref);
+	void PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn);
 	std::vector<Eigen::Vector3d> RTK_Results;
 };
 

@@ -766,10 +766,9 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
-void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref){
+void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn){
 	// Pivot은 임시로 PRN25 고정. 
 	int Pivot_PRN = 25;
-
 
 	Eigen::Vector3d LoS_ik, LoS_jk, LoS_il, LoS_jl;
 	Eigen::Vector3d now_UserPos;
@@ -783,16 +782,27 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 	// Sat Position: 
 	// - Sat_Pos_values_obs
 	// - Sat_Pos_values_ref
+	// std::vector<int> inter_prn = get_inter_prn(Sat_Pos_values_obs, Sat_Pos_values_ref);
+	for (auto e: inter_prn){
+		printf("%d, Inter PRN \n", e);
+	}
+	// printf("%d, Inter PRN\n", inter_prn);
 	for (int i = 0; i< Sat_Pos_values_ref.size();i++){
+		int rtk_now_prn = Sat_Pos_values_ref[i].prn;
+		
 		// GPS Receiver ~ Satellite: rho
 		LoS_ik << Sat_Pos_values_ref[i].x - now_UserPos[0], Sat_Pos_values_ref[i].y - now_UserPos[1], Sat_Pos_values_ref[i].z - now_UserPos[2];
-		printf("N1: %f, N2: %f, LoS_ik: %f\n",now_UserPos[0],UserPos[0],LoS_ik[0]);
+		// LoS_iJ << Sat_Pos_values_ref[]
+		// double LoS_tmp = sqrt( pow(Sat_Pos_values_ref[i].x,2) + pow(Sat_Pos_values_ref[i].y,2) + pow(Sat_Pos_values_ref[i].z,2));
+		// Unit test 
+		// printf("N1: %f, N2: %f, LoS_ik: %f, LosPR: %f \n",now_UserPos[0],UserPos[0],LoS_ik[0], LoS_tmp);
+
 	}
 	
 
 }
 
-void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
+void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g, std::vector<int> inter_prn){
 	// now_obs
 	// now_ref_obs
 	// std::string tmp; // same as gps_CA
@@ -823,9 +833,9 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 		}
 		}
 	}
-
+	
 	for (int j = 0;j <ephs_ref.size(); j++){
-		if (ephs_ref[j].t_oe >=GPS_week_sec && ephs_ref[j].t_oe < GPS_week_sec){
+		if (ephs_ref[j].t_oe >=GPS_week_sec && ephs_ref[j].t_oe < GPS_week_sec + 7200){
 			for (int i = 0; i< now_ref_g.size(); i++){
 				if (ephs_ref[j].prn == now_ref_g[i].PRN_s){
 					now_obs_meas = now_ref_g[i].MEAS_pr;
@@ -842,27 +852,29 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 	}
 	printf("N1: %lu, N2: %lu, Asa\n",Sat_Pos_values_ref.size(),Sat_Pos_values_obs.size());
 	/* Pos Estimation KF*/
-	PosEstimationKF(Sat_Pos_values_obs,Sat_Pos_values_ref);
+	PosEstimationKF(Sat_Pos_values_obs,Sat_Pos_values_ref, inter_prn);
 }
 
 std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::RTK_OBS>  now_ref_g){
-	std::vector<int> Answer;
+	std::vector<int> Ans;
 	
 	std::vector<int> now_obs_g_prn;
 	std::vector<int> now_ref_g_prn;
 	
+
 	for (auto e: now_obs_g){
-		now_obs_g_prn.push_back(e.PRN_s);
+		for (auto q: now_ref_g){
+			if (e.PRN_s == q.PRN_s){
+				Ans.push_back(e.PRN_s);
+			}
+		}
 	}
-	for (auto e: now_ref_g){
-		now_ref_g_prn.push_back(e.PRN_s);
-	}
-	std::set_intersection(now_obs_g_prn.begin(),now_obs_g_prn.end(), now_ref_g_prn.begin(), now_ref_g_prn.end(), std::back_inserter(Answer));
 
+	/* Unit test
 	printf("intersection\n");
-	for (auto e: Answer)
+	for (auto e: Ans)
 	printf("%d \n", e);
-
+	*/
 	//std::vector<int> now_obs_prn_temp =now_obs_g;
 	//std::vector<int> now_obs_ref_prn_temp =now_ref_obs.PRN_s;
 	
@@ -873,7 +885,7 @@ std::vector<int> GNSS_f::get_inter_prn(std::vector<GNSS_f::RTK_OBS> now_obs_g, s
 	//for (const auto& n: now_obs_prn_temp ) 
 	//printf("%d \n",n);
 
-	return Answer;
+	return Ans;
 } 
 
 
@@ -970,19 +982,22 @@ void GNSS_f::RTK(){
 		// 3.1 GPS 위성 중
 		// std::vector<GNSS_f::RTK_OBS> now_obs_g = OnlyGPS(now_obs);
 		std::vector<GNSS_f::RTK_OBS> now_obs_g = OnlyGPS(now_obs);
+		printf("User - OBS\n");
 		for(auto q : now_obs_g){
 			// test
 			printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
 		}
 		std::vector<GNSS_f::RTK_OBS> ref_obs_g = OnlyGPS(now_ref_obs);
+		printf("Ref - OBS\n");
 		for(auto q : ref_obs_g){
-			// printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
+			// test
+			printf("prn: %d, meas: %f, type: %c, signal: %s \n", q.PRN_s, q.MEAS_s, q.PRN_types, q.signal_type.c_str());
 		}
 		// 3.2 공통 위성만 추출
 		std::vector<int> inter_prn = get_inter_prn(now_obs_g, ref_obs_g);
 
 
-		gps_L1(now_obs_g, ref_obs_g);
+		gps_L1(now_obs_g, ref_obs_g, inter_prn);
 		if (k == 2)
 		{
 			break;
