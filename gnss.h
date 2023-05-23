@@ -231,6 +231,7 @@ public:
 	double MAT_IA[32][4];
 
 	
+	int RecPrnIndex(std::vector<Sat_Pos_temp> Sat_Pos_values_obs, int idx);
 
 	void PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn);
 	std::vector<Eigen::Vector3d> RTK_Results;

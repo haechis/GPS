@@ -766,6 +766,19 @@ void GNSS_f::Find_now_ref_obs(){
 }
 
 
+int GNSS_f::RecPrnIndex(std::vector<Sat_Pos_temp> Mat, int Prn){
+	// Receiver의 PRN Index 반환.
+	int ans = 0;
+	for (int i = 0; i<Mat.size();i++){
+		if( Mat[i].prn == Prn){
+			ans = i;
+			break;
+		}
+	}
+
+	return ans;
+}
+
 void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn){
 	// Pivot은 임시로 PRN25 고정. 
 	int Pivot_PRN = 25;
@@ -783,10 +796,29 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 	// - Sat_Pos_values_obs
 	// - Sat_Pos_values_ref
 	// std::vector<int> inter_prn = get_inter_prn(Sat_Pos_values_obs, Sat_Pos_values_ref);
+	/* Unit Test - Input data 잘 들어오는지 확인.
 	for (auto e: inter_prn){
 		printf("%d, Inter PRN \n", e);
-	}
+	} */
 	// printf("%d, Inter PRN\n", inter_prn);
+
+	for (auto e: inter_prn){
+		// Ref와 User의 Sat Nav 데이터가 다 있는 경우에만 위성 위치 계산을 해야 한다.
+
+		// 1. Reference station의 Sat_Pos_values_ref 중에서 몇 번째에 해당 PRN 정보가 있는지 확인한다.
+		int Ref_idx = RecPrnIndex(Sat_Pos_values_ref, e); 
+		if(Ref_idx == 0) {continue;}
+		
+		// 2. User station의 Sat_Pos_values_obs 중에서 몇 번째에 해당 PRN 정보가 있는지 확인한다.
+		int User_idx = RecPrnIndex(Sat_Pos_values_obs, e);
+		if (User_idx == 0){continue;}
+
+		// Unit Test - PRN Coexistence. 
+		// printf("PRN: %d, Ref_idx: %d, Ref: %d, User_idx: %d, User: %d\n",e, Ref_idx, Sat_Pos_values_ref[Ref_idx].prn, User_idx, Sat_Pos_values_obs[User_idx].prn);
+		
+
+	}
+
 	for (int i = 0; i< Sat_Pos_values_ref.size();i++){
 		int rtk_now_prn = Sat_Pos_values_ref[i].prn;
 		
