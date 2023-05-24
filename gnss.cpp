@@ -666,7 +666,8 @@ void GNSS_f::gps_CA(){
 					xyz.obs = now_obs.MEAS_s[i];
 					xyz.sig_type = now_obs.signal_type[i];
 					Sat_Pos_values.push_back(xyz);
-					
+					// printf("CACA<%d> <%d> prn: %d %f \n",i,j,xyz.prn, GPS_week_sec);
+					// printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
 					vec_size++;
 					
 
@@ -768,14 +769,14 @@ void GNSS_f::Find_now_ref_obs(){
 
 int GNSS_f::RecPrnIndex(std::vector<Sat_Pos_temp> Mat, int Prn){
 	// Receiver의 PRN Index 반환.
-	int ans = 0;
+	int ans = -1;
 	for (int i = 0; i<Mat.size();i++){
 		if( Mat[i].prn == Prn){
 			ans = i;
 			break;
 		}
 	}
-
+	
 	return ans;
 }
 
@@ -791,6 +792,9 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 	now_UserPos[0] = UserPos[0];
 	now_UserPos[1] = UserPos[1];
 	now_UserPos[2] = UserPos[2];
+	printf("***\n");
+	// printf("User: x: %f, y: %f, z: %f \n",UserPos[0],UserPos[1],UserPos[2]);
+
 	cdtr = UserPos[3];
 	// Sat Position: 
 	// - Sat_Pos_values_obs
@@ -802,28 +806,48 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 	} */
 	// printf("%d, Inter PRN\n", inter_prn);
 
+	// 1. Ref station에서 pivot prn 몇 인지?
+
+	int Ref_Pivot_idx = RecPrnIndex(Sat_Pos_values_ref, Pivot_PRN);
+	int User_Pivot_idx = RecPrnIndex(Sat_Pos_values_obs, Pivot_PRN);
+	
+	// printf("\n\n RPi: %d UPi: %d\n",Ref_Pivot_idx,User_Pivot_idx);
+
+	LoS_ik << Sat_Pos_values_ref[Ref_Pivot_idx].x - now_UserPos[0], Sat_Pos_values_ref[Ref_Pivot_idx].y - now_UserPos[1], Sat_Pos_values_ref[Ref_Pivot_idx].z - now_UserPos[2];
+	// double Los_ik_norm = sqrt( pow(Sat_Pos_values_ref[Ref_Pivot_idx].x,2) + pow(Sat_Pos_values_ref[Ref_Pivot_idx].y,2) + pow(Sat_Pos_values_ref[Ref_Pivot_idx].z,2));
+	double Los_ik_norm = LoS_ik.norm();
+	printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n\n",Pivot_PRN, Sat_Pos_values_ref[Ref_Pivot_idx].x,Sat_Pos_values_ref[Ref_Pivot_idx].y,Sat_Pos_values_ref[Ref_Pivot_idx].z);
+	printf("ik1: %f, ik2: %f, ik: %f, LosPR: %f \n",LoS_ik[0],LoS_ik[1],LoS_ik[2], Los_ik_norm);
+	
 	for (auto e: inter_prn){
+		if ( e == Pivot_PRN) {continue;}
+		
 		// Ref와 User의 Sat Nav 데이터가 다 있는 경우에만 위성 위치 계산을 해야 한다.
 
 		// 1. Reference station의 Sat_Pos_values_ref 중에서 몇 번째에 해당 PRN 정보가 있는지 확인한다.
 		int Ref_idx = RecPrnIndex(Sat_Pos_values_ref, e); 
-		if(Ref_idx == 0) {continue;}
+		if(Ref_idx == -1) {continue;}
 		
 		// 2. User station의 Sat_Pos_values_obs 중에서 몇 번째에 해당 PRN 정보가 있는지 확인한다.
 		int User_idx = RecPrnIndex(Sat_Pos_values_obs, e);
-		if (User_idx == 0){continue;}
+		if (User_idx == -1){continue;}
 
 		// Unit Test - PRN Coexistence. 
 		// printf("PRN: %d, Ref_idx: %d, Ref: %d, User_idx: %d, User: %d\n",e, Ref_idx, Sat_Pos_values_ref[Ref_idx].prn, User_idx, Sat_Pos_values_obs[User_idx].prn);
 		
-
+		LoS_il << Sat_Pos_values_ref[Ref_idx].x - now_UserPos[0], Sat_Pos_values_ref[Ref_idx].y - now_UserPos[1], Sat_Pos_values_ref[Ref_idx].z - now_UserPos[2];
+		// double LoS_il_norm = sqrt( pow(Sat_Pos_values_ref[Ref_idx].x,2) + pow(Sat_Pos_values_ref[Ref_idx].y,2) + pow(Sat_Pos_values_ref[Ref_idx].z,2));
+		double LoS_il_norm = LoS_il.norm(); 
+		printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n",e, Sat_Pos_values_ref[Ref_idx].x,Sat_Pos_values_ref[Ref_idx].y,Sat_Pos_values_ref[Ref_idx].z);
+		printf("prn: %d LoS_il1: %f, LoS_il2: %f, LoS_il: %f, LoS_ilPR: %f \n\n",e,LoS_il[0],LoS_il[1],LoS_il[2], LoS_il_norm);
 	}
 
 	for (int i = 0; i< Sat_Pos_values_ref.size();i++){
 		int rtk_now_prn = Sat_Pos_values_ref[i].prn;
 		
 		// GPS Receiver ~ Satellite: rho
-		LoS_ik << Sat_Pos_values_ref[i].x - now_UserPos[0], Sat_Pos_values_ref[i].y - now_UserPos[1], Sat_Pos_values_ref[i].z - now_UserPos[2];
+		//LoS_ik << Sat_Pos_values_ref[i].x - now_UserPos[0], Sat_Pos_values_ref[i].y - now_UserPos[1], Sat_Pos_values_ref[i].z - now_UserPos[2];
+
 		// LoS_iJ << Sat_Pos_values_ref[]
 		// double LoS_tmp = sqrt( pow(Sat_Pos_values_ref[i].x,2) + pow(Sat_Pos_values_ref[i].y,2) + pow(Sat_Pos_values_ref[i].z,2));
 		// Unit test 
@@ -870,6 +894,7 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 		if (ephs_ref[j].t_oe >=GPS_week_sec && ephs_ref[j].t_oe < GPS_week_sec + 7200){
 			for (int i = 0; i< now_ref_g.size(); i++){
 				if (ephs_ref[j].prn == now_ref_g[i].PRN_s){
+					now_eph = ephs_ref[j];
 					now_obs_meas = now_ref_g[i].MEAS_pr;
 					Sat_Pos_temp xyz = SatPos();
 
@@ -877,6 +902,8 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 					xyz.obs = now_ref_g[i].MEAS_s;
 					xyz.sig_type = now_ref_g[i].signal_type;
 					Sat_Pos_values_ref.push_back(xyz);
+					printf("<%d> <%d> prn: %d %f \n",i,j,now_ref_g[i].PRN_s, GPS_week_sec);
+					printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
 					break;
 				}
 			}
