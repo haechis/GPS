@@ -29,6 +29,9 @@ public:
 	double gps_SoL = 299792458;
 	double GPS_f1 = 1575.42e6;
 
+	// '23.05.27
+	Eigen::Vector3d RefTruePos;
+
 	// Time.
 	double gpst0[6]={1980,1, 6,0,0,0}; /* gps time reference */
 	double epoch2time(int YY, int MM, int DD, int HH, int Min, double Sec);
@@ -166,7 +169,7 @@ public:
 	struct Sat_Pos_temp{
 		double x,y,z;
 		int prn;
-		double obs;
+		double obs, obs_pr;
 		double dt_sat;
 		std::string sig_type;
 		//int num_sat;
@@ -232,6 +235,9 @@ public:
 
 	
 	int RecPrnIndex(std::vector<Sat_Pos_temp> Sat_Pos_values_obs, int idx);
+
+	double InitN_DD(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, int Ref_Pivot_idx, int User_Pivot_idx, int User_idx, int Ref_idx);
+
 
 	void PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn);
 	std::vector<Eigen::Vector3d> RTK_Results;

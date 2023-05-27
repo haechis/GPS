@@ -48,6 +48,10 @@ int main(void){
 	// RTK 
 	// Reference Station: DANJ
 	std::string RefSite = "DANJ";
+
+	// X = -3060974.71, Y = 4088259.964, Z = 3807870.617
+	Gps.RefTruePos << -3060974.71, 4088259.964, 3807870.617;
+
 	Gps.setRefSite(RefSite);
 	Gps.setRINEX_ref();
 

@@ -780,10 +780,28 @@ int GNSS_f::RecPrnIndex(std::vector<Sat_Pos_temp> Mat, int Prn){
 	return ans;
 }
 
+double GNSS_f::InitN_DD(std::vector<GNSS_f::Sat_Pos_temp> Sat_Pos_values_obs,std::vector<GNSS_f::Sat_Pos_temp> Sat_Pos_values_ref, int Ref_Pivot_idx, int User_Pivot_idx, int User_idx, int Ref_idx){
+	double N_ik = Sat_Pos_values_obs[User_Pivot_idx].obs - Sat_Pos_values_obs[User_Pivot_idx].obs_pr/ (gps_SoL/GPS_f1);
+	double N_jk = Sat_Pos_values_ref[Ref_Pivot_idx].obs - Sat_Pos_values_ref[Ref_Pivot_idx].obs_pr / (gps_SoL/GPS_f1);
+	double N_il = Sat_Pos_values_obs[User_idx].obs - Sat_Pos_values_obs[User_idx].obs_pr / (gps_SoL / GPS_f1);
+	double N_jl = Sat_Pos_values_ref[Ref_idx].obs - Sat_Pos_values_ref[Ref_idx].obs_pr / (gps_SoL / GPS_f1);	
+	
+	// - Unit Test.
+	// printf("1. %f, 2: %f, 3: %f",Sat_Pos_values_obs[User_Pivot_idx].obs_pr/ (gps_SoL/GPS_f1), Sat_Pos_values_obs[User_Pivot_idx].obs  , N_ik);
+	//std::cout<< Sat_Pos_values_obs[User_Pivot_idx].sig_type;
+	//std::cout<<std::endl;
+//	printf("1. %f, 2: %f, 3: %f, 4:%f\n",N_jk, N_jl, N_ik, N_il);
+	double NDD = N_jk - N_jl - N_ik + N_il;
+	return NDD;
+}
+
+
+
 void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn){
 	// Pivot은 임시로 PRN25 고정. 
 	int Pivot_PRN = 25;
 
+	double N_DD;
 	Eigen::Vector3d LoS_ik, LoS_jk, LoS_il, LoS_jl;
 	Eigen::Vector3d now_UserPos;
 
@@ -811,13 +829,19 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 	int Ref_Pivot_idx = RecPrnIndex(Sat_Pos_values_ref, Pivot_PRN);
 	int User_Pivot_idx = RecPrnIndex(Sat_Pos_values_obs, Pivot_PRN);
 	
+	if (Ref_Pivot_idx == -1 || User_Pivot_idx == -1) {return;}
+
+	LoS_ik << Sat_Pos_values_obs[User_Pivot_idx].x - UserPos[0], Sat_Pos_values_obs[User_Pivot_idx].y - UserPos[1], Sat_Pos_values_obs[User_Pivot_idx].z - UserPos[2];
+	LoS_jk << Sat_Pos_values_ref[Ref_Pivot_idx].x - RefTruePos[0], Sat_Pos_values_ref[Ref_Pivot_idx].y - RefTruePos[1], Sat_Pos_values_ref[Ref_Pivot_idx].z - RefTruePos[2];
+	
+	double Los_ik_norm = LoS_ik.norm();
+	double Los_jk_norm = LoS_jk.norm();
 	// printf("\n\n RPi: %d UPi: %d\n",Ref_Pivot_idx,User_Pivot_idx);
 
-	LoS_ik << Sat_Pos_values_ref[Ref_Pivot_idx].x - now_UserPos[0], Sat_Pos_values_ref[Ref_Pivot_idx].y - now_UserPos[1], Sat_Pos_values_ref[Ref_Pivot_idx].z - now_UserPos[2];
-	// double Los_ik_norm = sqrt( pow(Sat_Pos_values_ref[Ref_Pivot_idx].x,2) + pow(Sat_Pos_values_ref[Ref_Pivot_idx].y,2) + pow(Sat_Pos_values_ref[Ref_Pivot_idx].z,2));
-	double Los_ik_norm = LoS_ik.norm();
-	printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n\n",Pivot_PRN, Sat_Pos_values_ref[Ref_Pivot_idx].x,Sat_Pos_values_ref[Ref_Pivot_idx].y,Sat_Pos_values_ref[Ref_Pivot_idx].z);
-	printf("ik1: %f, ik2: %f, ik: %f, LosPR: %f \n",LoS_ik[0],LoS_ik[1],LoS_ik[2], Los_ik_norm);
+
+
+	// printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n\n",Pivot_PRN, Sat_Pos_values_ref[Ref_Pivot_idx].x,Sat_Pos_values_ref[Ref_Pivot_idx].y,Sat_Pos_values_ref[Ref_Pivot_idx].z);
+	// printf("ik1: %f, ik2: %f, ik: %f, LosPR: %f \n",LoS_ik[0],LoS_ik[1],LoS_ik[2], Los_ik_norm);
 	
 	for (auto e: inter_prn){
 		if ( e == Pivot_PRN) {continue;}
@@ -835,26 +859,25 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 		// Unit Test - PRN Coexistence. 
 		// printf("PRN: %d, Ref_idx: %d, Ref: %d, User_idx: %d, User: %d\n",e, Ref_idx, Sat_Pos_values_ref[Ref_idx].prn, User_idx, Sat_Pos_values_obs[User_idx].prn);
 		
-		LoS_il << Sat_Pos_values_ref[Ref_idx].x - now_UserPos[0], Sat_Pos_values_ref[Ref_idx].y - now_UserPos[1], Sat_Pos_values_ref[Ref_idx].z - now_UserPos[2];
+		LoS_il << Sat_Pos_values_obs[User_idx].x - now_UserPos[0], Sat_Pos_values_obs[User_idx].y - now_UserPos[1], Sat_Pos_values_obs[User_idx].z - now_UserPos[2];
+		LoS_jl << Sat_Pos_values_ref[Ref_idx].x - RefTruePos[0], Sat_Pos_values_ref[Ref_idx].y - RefTruePos[1], Sat_Pos_values_ref[Ref_idx].z - RefTruePos[2];
 		// double LoS_il_norm = sqrt( pow(Sat_Pos_values_ref[Ref_idx].x,2) + pow(Sat_Pos_values_ref[Ref_idx].y,2) + pow(Sat_Pos_values_ref[Ref_idx].z,2));
 		double LoS_il_norm = LoS_il.norm(); 
-		printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n",e, Sat_Pos_values_ref[Ref_idx].x,Sat_Pos_values_ref[Ref_idx].y,Sat_Pos_values_ref[Ref_idx].z);
-		printf("prn: %d LoS_il1: %f, LoS_il2: %f, LoS_il: %f, LoS_ilPR: %f \n\n",e,LoS_il[0],LoS_il[1],LoS_il[2], LoS_il_norm);
+		double LoS_jl_norm = LoS_jl.norm();
+		// printf("PRN: %d SatX1: %f, SatY: %f, SatZ: %f \n",e, Sat_Pos_values_ref[Ref_idx].x,Sat_Pos_values_ref[Ref_idx].y,Sat_Pos_values_ref[Ref_idx].z);
+		// printf("prn: %d LoS_il1: %f, LoS_il2: %f, LoS_il: %f, LoS_ilPR: %f \n\n",e,LoS_il[0],LoS_il[1],LoS_il[2], LoS_il_norm);
+
+
+
+		if (MAT_IA[e-1][3] == 0){
+			N_DD = InitN_DD(Sat_Pos_values_obs,Sat_Pos_values_ref,User_Pivot_idx, Ref_Pivot_idx,User_idx,Ref_idx);
+		}
+		else{
+			N_DD = MAT_IA[e-1][3];
+		}
+
+		printf("NDD: %f\n",N_DD);
 	}
-
-	for (int i = 0; i< Sat_Pos_values_ref.size();i++){
-		int rtk_now_prn = Sat_Pos_values_ref[i].prn;
-		
-		// GPS Receiver ~ Satellite: rho
-		//LoS_ik << Sat_Pos_values_ref[i].x - now_UserPos[0], Sat_Pos_values_ref[i].y - now_UserPos[1], Sat_Pos_values_ref[i].z - now_UserPos[2];
-
-		// LoS_iJ << Sat_Pos_values_ref[]
-		// double LoS_tmp = sqrt( pow(Sat_Pos_values_ref[i].x,2) + pow(Sat_Pos_values_ref[i].y,2) + pow(Sat_Pos_values_ref[i].z,2));
-		// Unit test 
-		// printf("N1: %f, N2: %f, LoS_ik: %f, LosPR: %f \n",now_UserPos[0],UserPos[0],LoS_ik[0], LoS_tmp);
-
-	}
-	
 
 }
 
@@ -882,6 +905,7 @@ void GNSS_f::gps_L1(std::vector<GNSS_f::RTK_OBS> now_obs_g, std::vector<GNSS_f::
 				xyz.prn = now_obs_g[i].PRN_s;
 				xyz.obs = now_obs_g[i].MEAS_s;
 				xyz.sig_type = now_obs_g[i].signal_type;
+				xyz.obs_pr = now_obs_meas;
 				Sat_Pos_values_obs.push_back(xyz);
 				// printf("<%d> <%d> prn: %d %f \n",i,j,now_obs_g[i].PRN_s, GPS_week_sec);
 				// printf("<Sat Pos> X: %f, Y: %f, Z: %f \n",xyz.x,xyz.y,xyz.z);
