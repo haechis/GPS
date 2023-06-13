@@ -800,6 +800,7 @@ double GNSS_f::InitN_DD(std::vector<GNSS_f::Sat_Pos_temp> Sat_Pos_values_obs,std
 void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::vector<Sat_Pos_temp> Sat_Pos_values_ref, std::vector<int> inter_prn){
 	// Pivot은 임시로 PRN25 고정. 
 	int Pivot_PRN = 25;
+	int inter_prn_num = inter_prn.size();
 
 	double N_DD;
 	Eigen::Vector3d LoS_ik, LoS_jk, LoS_il, LoS_jl;
@@ -875,6 +876,12 @@ void GNSS_f::PosEstimationKF(std::vector<Sat_Pos_temp> Sat_Pos_values_obs,std::v
 		else{
 			N_DD = MAT_IA[e-1][3];
 		}
+
+		// state vector 
+		
+
+
+
 
 		printf("NDD: %f\n",N_DD);
 	}
